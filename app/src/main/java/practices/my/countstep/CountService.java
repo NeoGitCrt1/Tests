@@ -1,5 +1,6 @@
 package practices.my.countstep;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -18,9 +19,12 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
 
+import java.sql.Date;
+
 /**
  * Created by ysy20_000 on 2016/7/9.
  */
+@SuppressLint("NewApi")
 class TriggerListener extends TriggerEventListener {
     public void onTrigger(TriggerEvent event) {
         // Do Work.
@@ -85,6 +89,7 @@ public class CountService extends Service implements SensorEventListener {
     private  SensorManager mSensorManager = null;
     private  Sensor mAcceleromete = null;
     private Handler mHandler;
+    private Date startTime;
     public void setmHandler(Handler mHandler){
         this.mHandler = mHandler;
     }
@@ -97,6 +102,7 @@ public class CountService extends Service implements SensorEventListener {
             mWakeLock.acquire();
             mSensorManager.registerListener(this, mAcceleromete,
                     SensorManager.SENSOR_DELAY_NORMAL);
+            startTime = new  Date(System.currentTimeMillis());
         }
         return START_STICKY;
     }
@@ -110,8 +116,8 @@ public class CountService extends Service implements SensorEventListener {
     public boolean stopService(Intent name) {
         System.out.println("stopService********************");
         mSensorManager.unregisterListener (this);
-        DownloadFilesTask dft = new DownloadFilesTask();
-        dft.execute(oSC[0],oSC[1],oSC[2],oSC[3]);
+        InsertTask dft = new InsertTask(startTime , oSC);
+        dft.execute();
         return super.stopService(name);
     }
 
@@ -175,13 +181,21 @@ public class CountService extends Service implements SensorEventListener {
         }
     }
 
-    private class DownloadFilesTask extends AsyncTask<Integer ,Integer,Integer> {
+    private class InsertTask extends AsyncTask<Integer, Integer, Boolean> {
 
-        protected Integer doInBackground(Integer... cnts) {
+        private Date startTime , endTime;
+        private int[] cnts;
+        public InsertTask(Date startTime , int[] cnts) {
+            this.startTime = startTime;
+            this.cnts = cnts;
+            endTime = new  Date(System.currentTimeMillis());
+        }
+
+        protected Boolean doInBackground(Integer... params) {
             int count = cnts.length;
             long totalSize = 0;
-            TaceLogHelper tlh = new TaceLogHelper();
-            return 1;
+
+            return true;
         }
 
         protected void onProgressUpdate(Integer... progress) {
