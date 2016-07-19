@@ -1,0 +1,5 @@
+<resources>
+    <string name="action_settings">Run</string>
+    <string name="app_name">StepCounter</string>
+    <string name="ser_switch">ServiceSwitch</string>
+</resources>
