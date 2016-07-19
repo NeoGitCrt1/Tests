@@ -10,6 +10,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.TriggerEvent;
 import android.hardware.TriggerEventListener;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -109,6 +110,8 @@ public class CountService extends Service implements SensorEventListener {
     public boolean stopService(Intent name) {
         System.out.println("stopService********************");
         mSensorManager.unregisterListener (this);
+        DownloadFilesTask dft = new DownloadFilesTask();
+        dft.execute(oSC[0],oSC[1],oSC[2],oSC[3]);
         return super.stopService(name);
     }
 
@@ -171,4 +174,23 @@ public class CountService extends Service implements SensorEventListener {
             mHandler.sendMessage(msg);
         }
     }
+
+    private class DownloadFilesTask extends AsyncTask<Integer ,Integer,Integer> {
+
+        protected Integer doInBackground(Integer... cnts) {
+            int count = cnts.length;
+            long totalSize = 0;
+            TaceLogHelper tlh = new TaceLogHelper();
+            return 1;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+//            setProgressPercent(progress[0]);
+        }
+
+        protected void onPostExecute(Long result) {
+//            showDialog("Downloaded " + result + " bytes");
+        }
+    }
+
 }
