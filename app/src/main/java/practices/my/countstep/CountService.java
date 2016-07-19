@@ -24,7 +24,7 @@ import android.support.annotation.Nullable;
 class TriggerListener extends TriggerEventListener {
     public void onTrigger(TriggerEvent event) {
         // Do Work.
-
+//2016
         // As it is a one shot sensor, it will be canceled automatically.
         // SensorManager.requestTriggerSensor(this, mSigMotion); needs to
         // be called again, if needed.
