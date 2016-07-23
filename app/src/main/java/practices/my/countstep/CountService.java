@@ -153,13 +153,13 @@ public class CountService extends Service implements SensorEventListener {
             if(event.values[i] > 10 ){
 //                System.out.println("onSensorChanged***********" + i + xyz[i] + event.values[i] );
                 oSCCntUp(3);
-                sendMsg(3);
+//                sendMsg(3);
             }
         }
 
     }
     private synchronized void oSCCntUp(int idx){
-        oSC[oSC.length - 1]++;
+        if(idx < 3) oSC[oSC.length - 1]++;
         oSC[idx]++;
     }
 
