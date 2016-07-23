@@ -9,11 +9,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.sql.Date;
-import java.text.SimpleDateFormat;
 
 import practices.my.countstep.MainActivity;
-
-import static java.lang.Long.valueOf;
 
 public class TraceLogDBManager extends SQLiteOpenHelper {
     final private static String mDbName="TraceLogDB";
@@ -49,6 +46,7 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
                     TraceLogDB.Entry.COLUMN_NAME_CNT10 + INTEGER_TYPE + COMMA_SEP +
                     TraceLogDB.Entry.COLUMN_NAME_START + LONG_TYPE + COMMA_SEP +
                     TraceLogDB.Entry.COLUMN_NAME_END + LONG_TYPE + COMMA_SEP +
+                    TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE + INTEGER_TYPE + COMMA_SEP +
                     TraceLogDB.Entry.COLUMN_NAME_DEL + BOOLEAN_TYPE +
                     " )";
 
@@ -93,6 +91,8 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
 
         SQLiteDatabase db =getWritableDatabase();
         ContentValues cv = new ContentValues();
+
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE,  startTime.getDate());
         cv.put(TraceLogDB.Entry.COLUMN_NAME_START, startTime.getTime());
         cv.put(TraceLogDB.Entry.COLUMN_NAME_END,endTime.getTime());
         cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT13, cnts[0]);
@@ -108,7 +108,13 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
         Cursor cur = null;
         try{
             String ord = (sort==null|| sort.toLowerCase().startsWith("a"))?" asc":" desc";
-            String sql = "select * from " + TraceLogDB.Entry.TABLE_NAME + " order by " + TraceLogDB.Entry.COLUMN_NAME_START + ord;
+            String sql = "select sum(" + TraceLogDB.Entry.COLUMN_NAME_CNT13 + ") , sum(" +
+                    TraceLogDB.Entry.COLUMN_NAME_CNT12 + "),sum(" +
+                    TraceLogDB.Entry.COLUMN_NAME_CNT11 + "),"
+                    +  TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE
+                    + " from "
+                    + TraceLogDB.Entry.TABLE_NAME
+                    + " group by " + TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE + ord;
             String[] args = {String.valueOf(row)};
             if(row>0){
                 sql +=" limit ?";

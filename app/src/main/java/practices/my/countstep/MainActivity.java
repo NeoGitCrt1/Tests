@@ -6,34 +6,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.PowerManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-
-import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -308,22 +298,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         protected Boolean doInBackground(Integer... params) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
             Cursor cr = traceLogDBManager.getData(-1,"asc");
+            int all = 0;
             if(cr!=null) {
                 while (cr.moveToNext()) {
-                    int all = cr.getInt(1) + cr.getInt(2) + cr.getInt(3);
+                    all = cr.getInt(0) + cr.getInt(1) + cr.getInt(2);
 //                    Log.i(TAG, dateFormat.format(cr.getInt(5)) + "--" + Integer.toString(all) + "--" + dateFormat.format(cr.getInt(6)))
-                    Log.i(TAG, dateFormat.format(cr.getLong(5))+ "--"
-                            + Integer.toString(all) + "--"
-                            +dateFormat.format(cr.getLong(6)) );
-
-
-
+                    Log.i(TAG, dateFormat.format(cr.getInt(3))+ ":"
+                            + Integer.toString(all)  );
                 }
             }else{
                 return  false;
+
             }
             return true;
         }

@@ -18,13 +18,10 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
-import android.widget.Toast;
 
 import java.sql.Date;
-import java.text.SimpleDateFormat;
 
 import practices.my.countstep.DBManager.TraceLogDBManager;
-import practices.my.countstep.logger.Log;
 
 /**
  * Created by ysy20_000 on 2016/7/9.
@@ -153,13 +150,13 @@ public class CountService extends Service implements SensorEventListener {
             if(event.values[i] > 10 ){
 //                System.out.println("onSensorChanged***********" + i + xyz[i] + event.values[i] );
                 oSCCntUp(3);
-                sendMsg(3);
+//                sendMsg(3);
             }
         }
 
     }
     private synchronized void oSCCntUp(int idx){
-        oSC[oSC.length - 1]++;
+        if(idx < 3) oSC[oSC.length - 1]++;
         oSC[idx]++;
     }
 
@@ -173,7 +170,7 @@ public class CountService extends Service implements SensorEventListener {
     public void clearCntStep(){
         for(int i=0;i<oSC.length;i++){
             oSC[i] = 0;
-            sendMsg(i);
+//            sendMsg(i);
         }
     }
     private void sendMsg(int idx){
@@ -203,11 +200,12 @@ public class CountService extends Service implements SensorEventListener {
             TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
             long res = traceLogDBManager.insertData(startTime,endTime,cnts);
             System.out.println("InsertTask***********" + res);
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            int all = cnts[0]+cnts[1]+cnts[2];
-            Log.i(TAG, dateFormat.format(startTime) + "--" + Integer.toString(all) + "--" + dateFormat.format(endTime));
-
-
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//            int all = cnts[0]+cnts[1]+cnts[2];
+////            Log.i(TAG, dateFormat.format(startTime) + "--" + Integer.toString(all) + "--" + dateFormat.format(endTime));
+//
+//            Log.i(TAG, dateFormat.format(cr.getInt(3))+ ":"
+//                    + Integer.toString(all)  );
             clearCntStep();
             return true;
         }
