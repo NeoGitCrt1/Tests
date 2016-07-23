@@ -12,8 +12,6 @@
     tools:context="practices.my.countstep.MainActivity"
     tools:showIn="@layout/activity_main">
 
-
-
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -22,6 +20,15 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="52dp" />
+
+    <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="Hello"-->
+        <!--android:id="@+id/textView"-->
+        <!--android:layout_alignParentTop="true"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:layout_marginTop="52dp" />-->
 
     <!--<TextView-->
         <!--android:layout_width="wrap_content"-->
@@ -48,22 +55,23 @@
         <!--android:layout_alignStart="@+id/textView3"-->
         <!--android:layout_marginTop="31dp" />-->
 
-    <!--<Switch-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/switch1"-->
-        <!--android:checked="false"-->
-        <!--android:layout_below="@+id/textView4"-->
-        <!--android:layout_centerHorizontal="true"-->
-        <!--android:layout_marginTop="100dp" />-->
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/switch1"
+        android:checked="false"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 
     <fragment
 
         android:id="@+id/log_fragment"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:name="practices.my.countstep.logger.LogFragment"
+        android:layout_marginTop="31dp"
+        android:layout_below="@+id/switch1"
+        android:layout_centerHorizontal="true" />
+    <!--android:name="com.example.android.common.logger.LogFragment"-->
 
 </RelativeLayout>

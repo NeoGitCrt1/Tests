@@ -18,8 +18,13 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import java.sql.Date;
+import java.text.SimpleDateFormat;
+
+import practices.my.countstep.DBManager.TraceLogDBManager;
+import practices.my.countstep.logger.Log;
 
 /**
  * Created by ysy20_000 on 2016/7/9.
@@ -78,10 +83,12 @@ public class CountService extends Service implements SensorEventListener {
     @Override
     public void onDestroy(){
         System.out.println("ds********************************");
+        InsertTask dft = new InsertTask(startTime , oSC);
+        dft.execute();
         mWakeLock.release();
 
         mSensorManager.unregisterListener (this);
-        clearCntStep();
+
         super.onDestroy();
 
     }
@@ -116,12 +123,11 @@ public class CountService extends Service implements SensorEventListener {
     public boolean stopService(Intent name) {
         System.out.println("stopService********************");
         mSensorManager.unregisterListener (this);
-        InsertTask dft = new InsertTask(startTime , oSC);
-        dft.execute();
+
         return super.stopService(name);
     }
 
-    private int[] oSC= {0,0,0,0};
+    private int[] oSC= {0,0,0,0,0};
     private int i= 0;
     private final char[] xyz = {'x','y','z'};
     @Override
@@ -153,6 +159,7 @@ public class CountService extends Service implements SensorEventListener {
 
     }
     private synchronized void oSCCntUp(int idx){
+        oSC[oSC.length - 1]++;
         oSC[idx]++;
     }
 
@@ -174,13 +181,13 @@ public class CountService extends Service implements SensorEventListener {
 //            System.out.println("sendMsg***********" + mHandler);
             Message msg = new Message();
 
-            msg.arg1 = oSC[idx];
+            msg.arg1 = oSC[oSC.length - 1];
             msg.what = idx;
 
             mHandler.sendMessage(msg);
         }
     }
-
+    public static final String TAG = "CountService";
     private class InsertTask extends AsyncTask<Integer, Integer, Boolean> {
 
         private Date startTime , endTime;
@@ -192,9 +199,16 @@ public class CountService extends Service implements SensorEventListener {
         }
 
         protected Boolean doInBackground(Integer... params) {
-            int count = cnts.length;
-            long totalSize = 0;
 
+            TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
+            long res = traceLogDBManager.insertData(startTime,endTime,cnts);
+            System.out.println("InsertTask***********" + res);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            int all = cnts[0]+cnts[1]+cnts[2];
+            Log.i(TAG, dateFormat.format(startTime) + "--" + Integer.toString(all) + "--" + dateFormat.format(endTime));
+
+
+            clearCntStep();
             return true;
         }
 
@@ -203,7 +217,10 @@ public class CountService extends Service implements SensorEventListener {
         }
 
         protected void onPostExecute(Long result) {
-//            showDialog("Downloaded " + result + " bytes");
+//
+//
+//            Toast.makeText(getApplicationContext(), "onPostExecute",
+//                    Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -1,10 +1,14 @@
 package practices.my.countstep;
 
+import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -14,11 +18,14 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -26,7 +33,15 @@ import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+import practices.my.countstep.DBManager.TraceLogDBManager;
+import practices.my.countstep.logger.Log;
+import practices.my.countstep.logger.LogFragment;
+import practices.my.countstep.logger.LogWrapper;
+import practices.my.countstep.logger.MessageOnlyLogFilter;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,9 +49,19 @@ public class MainActivity extends AppCompatActivity {
     private CountService countService;
 
     private TextView[] tv;
+    private TextView tv0;
     private Switch sw;
+    private ScrollView mScrollView;
 
+    private static MainActivity  instance;
+    public static Context getContext()
+    {
+        return instance;
+    }
 
+    public MainActivity() {
+        instance = this;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +72,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
-        tv = new TextView[4];
-        tv[0] = (TextView) findViewById(R.id.textView);
-        tv[1] = (TextView) findViewById(R.id.textView2);
-        tv[2] = (TextView) findViewById(R.id.textView3);
-        tv[3] = (TextView) findViewById(R.id.textView4);
-        changeTxt(0,"Hello");
+//        tv = new TextView[4];
+//        tv[0] = (TextView) findViewById(R.id.textView);
+//        tv[1] = (TextView) findViewById(R.id.textView2);
+//        tv[2] = (TextView) findViewById(R.id.textView3);
+//        tv[3] = (TextView) findViewById(R.id.textView4);
+//        changeTxt(0,"Hello");
+
+        tv0 = (TextView) findViewById(R.id.textView0);
         sw = (Switch) findViewById(R.id.switch1);
         sw.setOnTouchListener(new SwitchTouchListener());
         mHandler = new Handler(){
@@ -60,17 +87,34 @@ public class MainActivity extends AppCompatActivity {
             public void handleMessage(Message msg) {
 //                System.out.println("handleMessage***********");
                 if( msg.arg1 == 0 ){
-                    if(msg.what == 0){
-                        changeTxt(msg.what,   "Hello");
-                    }else{
-                        changeTxt(msg.what,   "");
-                    }
+                    changeTxt(   "Hello");
+//                    if(msg.what == 0){
+//                        changeTxt(msg.what,   "Hello");
+//                    }else{
+//                        changeTxt(msg.what,   "");
+//                    }
                 }else{
-                    changeTxt(msg.what,   Integer.toString( msg.arg1));
+
+//                    changeTxt(msg.what,   Integer.toString( msg.arg1));
+
+                    changeTxt(  Integer.toString( msg.arg1));
                 }
 
             }
         };
+
+// Wraps Android's native log framework.
+        LogWrapper logWrapper = new LogWrapper();
+        // Using Log, front-end to the logging chain, emulates android.util.log method signatures.
+        Log.setLogNode(logWrapper);
+
+        // Filter strips out everything except the message text.
+        MessageOnlyLogFilter msgFilter = new MessageOnlyLogFilter();
+        logWrapper.setNext(msgFilter);
+
+        LogFragment logFragment = (LogFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.log_fragment);
+        msgFilter.setNext(logFragment.getLogView());
 
 //        bt =(Button) findViewById(R.id.button);
 //        bt.setOnClickListener(new View.OnClickListener() {
@@ -96,6 +140,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        assert fab != null;
+        fab.setVisibility(View.INVISIBLE);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -136,16 +182,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+        showTask dft = new showTask();
+        dft.execute();
 //        System.out.println("app Start******************************");
 
     }
 
     private Handler mHandler;
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Override
     public void onResume(){
         super.onResume();
+
 //        System.out.println("app Resume******************************");
-        sw.setChecked(mBound);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            sw.setChecked(mBind);
+        }
 
 
     }
@@ -188,6 +240,9 @@ public class MainActivity extends AppCompatActivity {
     private void changeTxt(int idx, String str){
         tv[idx].setText(str);
     }
+    private void changeTxt( String str){
+        tv0.setText(str);
+    }
 
     class SwitchTouchListener implements View.OnTouchListener{
         private static final int MAX_CLICK_DURATION = 200;
@@ -207,7 +262,9 @@ public class MainActivity extends AppCompatActivity {
 //                        System.out.println("sw++++++++++++++" + sw.isChecked());
 
                         toggleBindService();
-                        sw.setChecked(mBound);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                            sw.setChecked(mBind);
+                        }
 //                        System.out.println("sw--------------" + sw.isChecked());
                     }
                 }
@@ -215,17 +272,17 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
     }
-    boolean mBound = false;
+    boolean mBind = false;
     private void toggleBindService(){
-        if (mBound) {
+        if (mBind) {
             unbindService(serviceConnection);
             serviceItent.putExtra( getString(R.string.ser_switch),false);
             stopService(serviceItent);
-            mBound = false;
+            mBind = false;
         }else{
             serviceItent.putExtra( getString(R.string.ser_switch),true);
             bindService(serviceItent, serviceConnection, Context.BIND_AUTO_CREATE);
-            mBound = true;
+            mBind = true;
         }
     }
     @Override
@@ -233,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy(){
         super.onDestroy();
 // PREVENT leaked ServiceConnection
-        if (mBound) {
+        if (mBind) {
             unbindService(serviceConnection);
             serviceItent.putExtra( getString(R.string.ser_switch),false);
             stopService(serviceItent);
@@ -244,4 +301,39 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
+    public static final String TAG = "MainActivity";
+    private class showTask extends AsyncTask<Integer, Integer, Boolean> {
+
+        public showTask() {
+        }
+
+        protected Boolean doInBackground(Integer... params) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
+            Cursor cr = traceLogDBManager.getData(-1,"asc");
+            if(cr!=null) {
+                while (cr.moveToNext()) {
+                    int all = cr.getInt(1) + cr.getInt(2) + cr.getInt(3);
+//                    Log.i(TAG, dateFormat.format(cr.getInt(5)) + "--" + Integer.toString(all) + "--" + dateFormat.format(cr.getInt(6)))
+                    Log.i(TAG, dateFormat.format(cr.getLong(5))+ "--"
+                            + Integer.toString(all) + "--"
+                            +dateFormat.format(cr.getLong(6)) );
+
+
+
+                }
+            }else{
+                return  false;
+            }
+            return true;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+//            setProgressPercent(progress[0]);
+        }
+
+        protected void onPostExecute(Long result) {
+//            showDialog("Downloaded " + result + " bytes");
+        }
+    }
 }
