@@ -9,6 +9,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import practices.my.countstep.MainActivity;
 
@@ -46,7 +48,7 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
                     TraceLogDB.Entry.COLUMN_NAME_CNT10 + INTEGER_TYPE + COMMA_SEP +
                     TraceLogDB.Entry.COLUMN_NAME_START + LONG_TYPE + COMMA_SEP +
                     TraceLogDB.Entry.COLUMN_NAME_END + LONG_TYPE + COMMA_SEP +
-                    TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE + INTEGER_TYPE + COMMA_SEP +
+                    TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE + LONG_TYPE + COMMA_SEP +
                     TraceLogDB.Entry.COLUMN_NAME_DEL + BOOLEAN_TYPE +
                     " )";
 
@@ -87,12 +89,13 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
         }
     }
     //添加照片信息
-    public long insertData(Date startTime ,Date endTime, int[] cnts){
+    public long insertData(Date startTime ,Date endTime, int[] cnts) throws ParseException {
 
         SQLiteDatabase db =getWritableDatabase();
         ContentValues cv = new ContentValues();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE,  startTime.getDate());
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE,  dateFormat.parse(dateFormat.format(startTime)).getTime());
         cv.put(TraceLogDB.Entry.COLUMN_NAME_START, startTime.getTime());
         cv.put(TraceLogDB.Entry.COLUMN_NAME_END,endTime.getTime());
         cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT13, cnts[0]);
@@ -114,7 +117,7 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
                     +  TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE
                     + " from "
                     + TraceLogDB.Entry.TABLE_NAME
-                    + " group by " + TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE + ord;
+                    + " group by " + TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE;
             String[] args = {String.valueOf(row)};
             if(row>0){
                 sql +=" limit ?";

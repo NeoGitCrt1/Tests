@@ -20,6 +20,7 @@ import android.os.PowerManager;
 import android.support.annotation.Nullable;
 
 import java.sql.Date;
+import java.text.ParseException;
 
 import practices.my.countstep.DBManager.TraceLogDBManager;
 
@@ -170,7 +171,7 @@ public class CountService extends Service implements SensorEventListener {
     public void clearCntStep(){
         for(int i=0;i<oSC.length;i++){
             oSC[i] = 0;
-//            sendMsg(i);
+            sendMsg(i);
         }
     }
     private void sendMsg(int idx){
@@ -198,7 +199,11 @@ public class CountService extends Service implements SensorEventListener {
         protected Boolean doInBackground(Integer... params) {
 
             TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
-            long res = traceLogDBManager.insertData(startTime,endTime,cnts);
+            long res = 0;
+            try {
+                res = traceLogDBManager.insertData(startTime,endTime,cnts);
+            } catch (ParseException e) {
+            }
             System.out.println("InsertTask***********" + res);
 //            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 //            int all = cnts[0]+cnts[1]+cnts[2];

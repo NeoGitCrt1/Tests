@@ -43,6 +43,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 
+import practices.my.countstep.MainActivity;
+
 /**
  * Simple fraggment which contains a LogView and uses is to output log data it receives
  * through the LogNode interface.
@@ -53,6 +55,7 @@ public class LogFragment extends Fragment {
     private ScrollView mScrollView;
 
     public LogFragment() {}
+
 
     public View inflateViews() {
         mScrollView = new ScrollView(getActivity());

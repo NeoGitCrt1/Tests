@@ -78,6 +78,9 @@ public class MainActivity extends AppCompatActivity {
 //                System.out.println("handleMessage***********");
                 if( msg.arg1 == 0 ){
                     changeTxt(   "Hello");
+                    Log.i("Clear","");
+                    showTask dft = new showTask();
+                    dft.execute();
 //                    if(msg.what == 0){
 //                        changeTxt(msg.what,   "Hello");
 //                    }else{
@@ -86,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
                 }else{
 
 //                    changeTxt(msg.what,   Integer.toString( msg.arg1));
-
                     changeTxt(  Integer.toString( msg.arg1));
                 }
 
@@ -306,7 +308,8 @@ public class MainActivity extends AppCompatActivity {
                 while (cr.moveToNext()) {
                     all = cr.getInt(0) + cr.getInt(1) + cr.getInt(2);
 //                    Log.i(TAG, dateFormat.format(cr.getInt(5)) + "--" + Integer.toString(all) + "--" + dateFormat.format(cr.getInt(6)))
-                    Log.i(TAG, dateFormat.format(cr.getInt(3))+ ":"
+//                    System.out.println("++++"+cr.getInt(3));
+                    Log.i(TAG, dateFormat.format(cr.getLong(3))+ ":"
                             + Integer.toString(all)  );
                 }
             }else{
