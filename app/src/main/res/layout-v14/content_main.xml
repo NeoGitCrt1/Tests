@@ -63,15 +63,35 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
-    <fragment
+    <!--<fragment-->
 
-        android:id="@+id/log_fragment"
+        <!--android:id="@+id/log_fragment"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:name="practices.my.countstep.logger.LogFragment"-->
+        <!--android:layout_marginTop="31dp"-->
+        <!--android:layout_below="@+id/switch1"-->
+        <!--android:layout_centerHorizontal="true" />-->
+
+    <ScrollView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:name="practices.my.countstep.logger.LogFragment"
-        android:layout_marginTop="31dp"
+        android:id="@+id/scrollView"
+        android:layout_marginTop="36dp"
         android:layout_below="@+id/switch1"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Small Text"
+            android:id="@+id/textViewInScl"
+            android:layout_below="@+id/switch1"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="49dp" />
+
+    </ScrollView>
+
     <!--android:name="com.example.android.common.logger.LogFragment"-->
 
 </RelativeLayout>

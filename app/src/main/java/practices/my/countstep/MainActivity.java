@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private CountService countService;
 
     private TextView[] tv;
-    private TextView tv0;
+    private TextView tv0,tvInScl;
     private Switch sw;
     private ScrollView mScrollView;
 
@@ -70,6 +70,10 @@ public class MainActivity extends AppCompatActivity {
 //        changeTxt(0,"Hello");
 
         tv0 = (TextView) findViewById(R.id.textView0);
+
+        mScrollView = (ScrollView)findViewById(R.id.scrollView);
+        tvInScl = (TextView) findViewById(R.id.textViewInScl);
+        tvInScl.setText("empty");
         sw = (Switch) findViewById(R.id.switch1);
         sw.setOnTouchListener(new SwitchTouchListener());
         mHandler = new Handler(){
@@ -78,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
 //                System.out.println("handleMessage***********");
                 if( msg.arg1 == 0 ){
                     changeTxt(   "Hello");
-                    Log.i("Clear","");
                     showTask dft = new showTask();
                     dft.execute();
 //                    if(msg.what == 0){
@@ -96,18 +99,17 @@ public class MainActivity extends AppCompatActivity {
         };
 
 // Wraps Android's native log framework.
-        LogWrapper logWrapper = new LogWrapper();
-        // Using Log, front-end to the logging chain, emulates android.util.log method signatures.
-        Log.setLogNode(logWrapper);
-
-        // Filter strips out everything except the message text.
-        MessageOnlyLogFilter msgFilter = new MessageOnlyLogFilter();
-        logWrapper.setNext(msgFilter);
-
-        LogFragment logFragment = (LogFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.log_fragment);
-        msgFilter.setNext(logFragment.getLogView());
-
+//        LogWrapper logWrapper = new LogWrapper();
+//        // Using Log, front-end to the logging chain, emulates android.util.log method signatures.
+//        Log.setLogNode(logWrapper);
+//
+//        // Filter strips out everything except the message text.
+//        MessageOnlyLogFilter msgFilter = new MessageOnlyLogFilter();
+//        logWrapper.setNext(msgFilter);
+//
+//        LogFragment logFragment = (LogFragment) getSupportFragmentManager()
+//                .findFragmentById(R.id.log_fragment);
+//        msgFilter.setNext(logFragment.getLogView());
 //        bt =(Button) findViewById(R.id.button);
 //        bt.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -295,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = "MainActivity";
     private class showTask extends AsyncTask<Integer, Integer, Boolean> {
-
+        final StringBuilder outputBuilder = new StringBuilder();
         public showTask() {
         }
 
@@ -305,12 +307,17 @@ public class MainActivity extends AppCompatActivity {
             Cursor cr = traceLogDBManager.getData(-1,"asc");
             int all = 0;
             if(cr!=null) {
+
+
                 while (cr.moveToNext()) {
                     all = cr.getInt(0) + cr.getInt(1) + cr.getInt(2);
+                    outputBuilder.append(dateFormat.format(cr.getLong(3))).append(":").append(Integer.toString(all)  ).append("\n");
+//                    Log.i(TAG,outputBuilder.toString());
 //                    Log.i(TAG, dateFormat.format(cr.getInt(5)) + "--" + Integer.toString(all) + "--" + dateFormat.format(cr.getInt(6)))
-//                    System.out.println("++++"+cr.getInt(3));
-                    Log.i(TAG, dateFormat.format(cr.getLong(3))+ ":"
-                            + Integer.toString(all)  );
+//                    System.out.println("++++"+outputBuilder.toString());
+
+//                    Log.i(TAG, dateFormat.format(cr.getLong(3))+ ":"
+//                            + Integer.toString(all)  );
                 }
             }else{
                 return  false;
@@ -323,7 +330,10 @@ public class MainActivity extends AppCompatActivity {
 //            setProgressPercent(progress[0]);
         }
 
-        protected void onPostExecute(Long result) {
+        protected void onPostExecute(Boolean result) {
+//            System.out.println("++++"+outputBuilder.toString());
+            tvInScl.setText(outputBuilder.toString());
+            mScrollView.fullScroll(ScrollView.FOCUS_DOWN);
 //            showDialog("Downloaded " + result + " bytes");
         }
     }
