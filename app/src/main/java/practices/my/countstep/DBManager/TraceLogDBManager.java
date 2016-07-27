@@ -67,7 +67,7 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
 
     private Cursor ExecSQLForCursor(String sql, String[] selectionArgs){
         SQLiteDatabase db =getWritableDatabase();
-        Log.i("ExecSQLForCursor",sql);
+//        Log.i("ExecSQLForCursor",sql);
         return db.rawQuery(sql, selectionArgs);
     }
     private void ExecSQL(String sql){
@@ -88,7 +88,7 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
             e.printStackTrace();
         }
     }
-    //添加照片信息
+    //添加
     public long insertData(Date startTime ,Date endTime, int[] cnts) throws ParseException {
 
         SQLiteDatabase db =getWritableDatabase();
@@ -106,7 +106,50 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
 
         return db.insert(TraceLogDB.Entry.TABLE_NAME, null, cv);
     }
+    //添加
+    public long updateData(Date startTime ,Date endTime, int[] cnts) throws ParseException {
+
+        SQLiteDatabase db =getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_END,endTime.getTime());
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT13, cnts[0]);
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT12, cnts[1]);
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT11, cnts[2]);
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT10, cnts[3]);
+        String[] args = {Long.toString(startTime.getTime())};
+        return db.update(TraceLogDB.Entry.TABLE_NAME, cv, TraceLogDB.Entry.COLUMN_NAME_START + "=?",args);
+    }
+    public long dealData(Date startTime ,Date endTime, int[] cnts) throws ParseException {
+
+        long res = 0;
+
+        if(getData(startTime).moveToNext()){
+            res = updateData(startTime,endTime,cnts);
+        }else{
+            res = insertData(startTime,endTime,cnts);
+        }
+
+        return res;
+    }
     //查询
+    public Cursor getData(Date startTime){
+        Cursor cur = null;
+//        try{
+
+            String sql = "select " + TraceLogDB.Entry.COLUMN_NAME_CNT13
+                    + " from "
+                    + TraceLogDB.Entry.TABLE_NAME
+                    + " where " + TraceLogDB.Entry.COLUMN_NAME_START
+                    + "= ?" ;
+            String[] args = {Long.toString(startTime.getTime())};
+            cur = ExecSQLForCursor(sql,args);
+//        }catch (Exception e) {
+//            cur = null;
+////            Log.e("SearchPhoto Exception",e.getMessage());
+////            e.printStackTrace();
+//        }
+        return cur;
+    }
     public Cursor getData(int row,String sort){
         Cursor cur = null;
         try{

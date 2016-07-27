@@ -11,7 +11,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.TriggerEvent;
 import android.hardware.TriggerEventListener;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -21,6 +20,11 @@ import android.support.annotation.Nullable;
 
 import java.sql.Date;
 import java.text.ParseException;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import practices.my.countstep.DBManager.TraceLogDBManager;
 
@@ -81,8 +85,8 @@ public class CountService extends Service implements SensorEventListener {
     @Override
     public void onDestroy(){
         System.out.println("ds********************************");
-        InsertTask dft = new InsertTask(startTime , oSC);
-        dft.execute();
+        InsertTask dft = new InsertTask(true);
+        new Thread(dft).start();
         mWakeLock.release();
 
         mSensorManager.unregisterListener (this);
@@ -95,6 +99,7 @@ public class CountService extends Service implements SensorEventListener {
     private  Sensor mAcceleromete = null;
     private Handler mHandler;
     private Date startTime;
+    private Timer timer = new Timer();
     public void setmHandler(Handler mHandler){
         this.mHandler = mHandler;
     }
@@ -104,10 +109,28 @@ public class CountService extends Service implements SensorEventListener {
                                int startId){
         System.out.println("onStartCommand********************");
         if( intent.getBooleanExtra(getString(R.string.ser_switch),false)){
+            startTime = new  Date(System.currentTimeMillis());
             mWakeLock.acquire();
             mSensorManager.registerListener(this, mAcceleromete,
                     SensorManager.SENSOR_DELAY_NORMAL);
-            startTime = new  Date(System.currentTimeMillis());
+
+            ScheduledExecutorService service = Executors.newScheduledThreadPool(10);
+
+            long initialDelay1 = 1;
+            long period1 = 1;
+            // 从现在开始1秒钟之后，每隔1秒钟执行一次job1
+            service.scheduleAtFixedRate(
+                    new InsertTask(false), initialDelay1,
+                    period1, TimeUnit.MINUTES);
+
+
+
+//
+//            long delay1 = 1 * 1000;
+//            long period1 = 1000;
+//            // 从现在开始 1 秒钟之后，每隔 1 秒钟执行一次 job1
+//            timer.schedule(new InsertTask(), delay1, period1);
+
         }
         return START_STICKY;
     }
@@ -126,6 +149,7 @@ public class CountService extends Service implements SensorEventListener {
     }
 
     private int[] oSC= {0,0,0,0,0};
+
     private int i= 0;
     private final char[] xyz = {'x','y','z'};
     @Override
@@ -143,13 +167,13 @@ public class CountService extends Service implements SensorEventListener {
                 oSCCntUp(1);
                 sendMsg(1);
             }else
-            if(event.values[i] > 11 ){
+            if(event.values[i] > 10.5 ){
 //                System.out.println("onSensorChanged***********" + i + xyz[i] + event.values[i] );
                 oSCCntUp(2);
                 sendMsg(2);
             }else
             if(event.values[i] > 10 ){
-//                System.out.println("onSensorChanged***********" + i + xyz[i] + event.values[i] );
+                System.out.println("onSensorChanged***********" + i + xyz[i] + event.values[i] );
                 oSCCntUp(3);
 //                sendMsg(3);
             }
@@ -186,45 +210,65 @@ public class CountService extends Service implements SensorEventListener {
         }
     }
     public static final String TAG = "CountService";
-    private class InsertTask extends AsyncTask<Integer, Integer, Boolean> {
+    private class InsertTask extends TimerTask implements Runnable{
 
-        private Date startTime , endTime;
-        private int[] cnts;
-        public InsertTask(Date startTime , int[] cnts) {
-            this.startTime = startTime;
-            this.cnts = cnts;
+        private Date  endTime;
+        private Boolean isEndCnt = false;
+//        private int[] cnts;
+        public InsertTask(boolean isShutDown) {
+//            this.startTime = startTime;
+//            this.cnts = cnts;
             endTime = new  Date(System.currentTimeMillis());
+            if (isShutDown){
+                isEndCnt = true;
+            }else if(startTime.getDate()!=endTime.getDate()){
+                isEndCnt = true;
+            }
         }
-
-        protected Boolean doInBackground(Integer... params) {
-
+        @Override
+        public void run(){
             TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
             long res = 0;
             try {
-                res = traceLogDBManager.insertData(startTime,endTime,cnts);
+                res = traceLogDBManager.dealData(startTime,endTime,oSC);
             } catch (ParseException e) {
             }
-            System.out.println("InsertTask***********" + res);
-//            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-//            int all = cnts[0]+cnts[1]+cnts[2];
-////            Log.i(TAG, dateFormat.format(startTime) + "--" + Integer.toString(all) + "--" + dateFormat.format(endTime));
-//
-//            Log.i(TAG, dateFormat.format(cr.getInt(3))+ ":"
-//                    + Integer.toString(all)  );
-            clearCntStep();
-            return true;
-        }
+            if (isEndCnt){
+                clearCntStep();
+                startTime = new  Date(System.currentTimeMillis());
+            }
 
-        protected void onProgressUpdate(Integer... progress) {
-//            setProgressPercent(progress[0]);
         }
-
-        protected void onPostExecute(Long result) {
+//        protected Boolean doInBackground(Integer... params) {
 //
+//            TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
+//            long res = 0;
+//            try {
+//                res = traceLogDBManager.insertData(startTime,endTime,oSC);
+//            } catch (ParseException e) {
+//            }
+////            System.out.println("InsertTask***********" + res);
+////            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+////            int all = cnts[0]+cnts[1]+cnts[2];
+//////            Log.i(TAG, dateFormat.format(startTime) + "--" + Integer.toString(all) + "--" + dateFormat.format(endTime));
+////
+////            Log.i(TAG, dateFormat.format(cr.getInt(3))+ ":"
+////                    + Integer.toString(all)  );
+//            clearCntStep();
+//            startTime = new  Date(System.currentTimeMillis());
+//            return true;
+//        }
 //
-//            Toast.makeText(getApplicationContext(), "onPostExecute",
-//                    Toast.LENGTH_SHORT).show();
-        }
+//        protected void onProgressUpdate(Integer... progress) {
+////            setProgressPercent(progress[0]);
+//        }
+//
+//        protected void onPostExecute(Long result) {
+////
+////
+////            Toast.makeText(getApplicationContext(), "onPostExecute",
+////                    Toast.LENGTH_SHORT).show();
+//        }
     }
 
 }

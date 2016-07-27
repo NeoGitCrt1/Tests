@@ -272,12 +272,11 @@ public class MainActivity extends AppCompatActivity {
             unbindService(serviceConnection);
             serviceItent.putExtra( getString(R.string.ser_switch),false);
             stopService(serviceItent);
-            mBind = false;
         }else{
             serviceItent.putExtra( getString(R.string.ser_switch),true);
             bindService(serviceItent, serviceConnection, Context.BIND_AUTO_CREATE);
-            mBind = true;
         }
+        mBind = !mBind;
     }
     @Override
 
