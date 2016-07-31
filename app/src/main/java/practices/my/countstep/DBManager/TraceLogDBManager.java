@@ -8,11 +8,13 @@ import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import practices.my.countstep.MainActivity;
+
 
 public class TraceLogDBManager extends SQLiteOpenHelper {
     final private static String mDbName="TraceLogDB";
@@ -56,7 +58,37 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
             "DROP TABLE IF EXISTS " + TraceLogDB.Entry.TABLE_NAME;
     @Override
     public void onCreate(SQLiteDatabase db) {
+
         db.execSQL(SQL_CREATE_ENTRIES);
+
+
+//        add dummy data !!!!!!
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        Calendar rightNow = Calendar.getInstance();
+        rightNow.setTime(new Date(System.currentTimeMillis()));
+
+
+        int[] cnts = {0, 0, 0, 0};
+        for (int i = 0; i < 10; i++) {
+
+
+//            rightNow.add(Calendar.YEAR,-1);//日期减1年
+//            rightNow.add(Calendar.MONTH,3);//日期加3个月
+            rightNow.add(Calendar.DAY_OF_YEAR, i);//日期加10天
+            Date st = rightNow.getTime();
+
+            cnts[0] = 10 + i;
+            cnts[1] = 50 + i;
+            cnts[2] = 100 + i;
+            cnts[3] = 100 + i;
+
+            try {
+                insertData(st, st, cnts, db);
+            } catch (ParseException e) {
+            }
+
+
+        }
     }
 
     @Override
@@ -89,9 +121,8 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
         }
     }
     //添加
-    public long insertData(Date startTime ,Date endTime, int[] cnts) throws ParseException {
+    public long insertData(Date startTime, Date endTime, int[] cnts, SQLiteDatabase db) throws ParseException {
 
-        SQLiteDatabase db =getWritableDatabase();
         ContentValues cv = new ContentValues();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -105,6 +136,12 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
         cv.put(TraceLogDB.Entry.COLUMN_NAME_DEL, false);
 
         return db.insert(TraceLogDB.Entry.TABLE_NAME, null, cv);
+    }
+
+    public long insertData(Date startTime, Date endTime, int[] cnts) throws ParseException {
+
+        SQLiteDatabase db = getWritableDatabase();
+        return insertData(startTime, endTime, cnts, db);
     }
     //添加
     public long updateData(Date startTime ,Date endTime, int[] cnts) throws ParseException {
