@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,12 +22,11 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
-import org.achartengine.chart.AbstractChart;
 import org.achartengine.chart.PointStyle;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
@@ -39,66 +37,29 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import practices.my.countstep.DBManager.TraceLogDBManager;
-import practices.my.countstep.MyChartRenderer.MyChartFactory;
 import practices.my.countstep.Services.CountService;
+import practices.my.countstep.common.db.ContextSaver;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = "MainActivity";
-    private static MainActivity instance;
     boolean mBind = false;
     private Intent serviceItent;
     private CountService countService;
-    private TextView[] tv;
+    //    private TextView[] tv;
     private TextView tv0,tvInScl;
     private Switch sw;
-    private ScrollView mScrollView;
+    //    private ScrollView mScrollView;
     private int nowCnt = 0;
     private Handler mHandler;
-    private ServiceConnection serviceConnection = new ServiceConnection() {
 
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
 
-            countService = ((CountService.CountServiceBinder) service).getService();
-            countService.setmHandler(mHandler);
-            startService(serviceItent);
-        }
 
-        @Override
-        public void onServiceDisconnected(ComponentName className) {
-            countService = null;
-        }
-
-    };
-    private String[] mMonth = new String[]{
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    };
-    /**
-     * The encapsulated graphical view.
-     */
-    private GraphicalView mView;
-    /**
-     * The chart to be drawn.
-     */
-    private AbstractChart mChart;
-    private XYSeriesRenderer incomeRenderer;
-    private XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-    private XYMultipleSeriesRenderer multiRenderer;
-
-    public MainActivity() {
-        instance = this;
-    }
-
-    public static Context getContext() {
-        return instance;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        ContextSaver.setContext(this);
 
 //        System.out.println("app Create******************************");
         serviceItent = new Intent(this, CountService.class);
@@ -120,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
             public void handleMessage(Message msg) {
                 nowCnt = msg.arg1;
 //                    changeTxt(msg.what,   Integer.toString( msg.arg1));
-                changeTxt(msg.arg1);
+                changeTxt(nowCnt);
             }
         };
 
@@ -163,32 +124,38 @@ public class MainActivity extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
 
-        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            openChart();
+//        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+////            openChart();
+////        }
+////            Toast.makeText(getApplicationContext(), "切换为横屏", Toast.LENGTH_SHORT).show();
+//        } else if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+//            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//            assert fab != null;
+////            fab.setVisibility(View.INVISIBLE);
+//            fab.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    if(mTrick < 0 ){
+//                        mTrick = 0 ;
+//                    }else{
+//                        mTrick = -1;
+//                    }
+//                    Snackbar.make(view, "Replace with your own action" + mTrick, Snackbar.LENGTH_LONG)
+//                            .setAction("Action", null).show();
+//                }
+//            });
+////            Toast.makeText(getApplicationContext(), "切换为竖屏", Toast.LENGTH_SHORT).show();
 //        }
-//            Toast.makeText(getApplicationContext(), "切换为横屏", Toast.LENGTH_SHORT).show();
-        } else if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-            assert fab != null;
-//            fab.setVisibility(View.INVISIBLE);
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-                }
-            });
-//            Toast.makeText(getApplicationContext(), "切换为竖屏", Toast.LENGTH_SHORT).show();
-        }
 
 
     }
 
+    private int mTrick = 0;
     private void initLandAndPort() {
         setContentView(R.layout.activity_main);
         tv0 = (TextView) findViewById(R.id.textView0);
 
-        mScrollView = (ScrollView) findViewById(R.id.scrollView);
+//        mScrollView = (ScrollView) findViewById(R.id.scrollView);
 //        tvInScl = (TextView) findViewById(R.id.textViewInScl);
 //        tvInScl.setText("empty");
 //        System.out.println("tvInScl.getHeight()");
@@ -235,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 //        System.out.println("app Resume******************************");
         sw.setChecked(mBind);
+        mTrick = 0;
 
 
 
@@ -242,29 +210,29 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onPause() {
-
+        mTrick = 0;
         super.onPause();
 //        System.out.println("app Pause******************************");
-        mHandler.removeMessages(0);
-        mHandler.removeMessages(1);
-        mHandler.removeMessages(2);
-        mHandler.removeMessages(3);
+//        mHandler.removeMessages(0);
+//        mHandler.removeMessages(1);
+//        mHandler.removeMessages(2);
+//        mHandler.removeMessages(3);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        mHandler.removeMessages(0);
-        mHandler.removeMessages(1);
-        mHandler.removeMessages(2);
-        mHandler.removeMessages(3);
+//        mHandler.removeMessages(0);
+//        mHandler.removeMessages(1);
+//        mHandler.removeMessages(2);
+//        mHandler.removeMessages(3);
 //        System.out.println("app stop******************************");
 
     }
 
-    private void changeTxt(int idx, String str) {
-        tv[idx].setText(str);
-    }
+//    private void changeTxt(int idx, String str) {
+//        tv[idx].setText(str);
+//    }
 
     private void changeTxt(int n) {
         if (n < 1) {
@@ -289,6 +257,22 @@ public class MainActivity extends AppCompatActivity {
         mBind = !mBind;
     }
 
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+
+            countService = ((CountService.CountServiceBinder) service).getService();
+            countService.setmHandler(mHandler);
+            startService(serviceItent);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            countService = null;
+        }
+
+    };
     @Override
 
     protected void onDestroy() {
@@ -309,11 +293,20 @@ public class MainActivity extends AppCompatActivity {
         startActivity(i);
     }
 
+    /**
+     * The encapsulated graphical view.
+     */
+    private GraphicalView mView;
+    /**
+     * The chart to be drawn.
+     */
+    private XYSeriesRenderer incomeRenderer;
+    private XYMultipleSeriesRenderer multiRenderer;
     private GraphicalView openChart(String[] dates, int[] cnts) {
-        dataset.clear();
-        int[] x = {1, 2, 3, 4, 5, 6, 7, 8};
-        int[] income = {2000, 2500, 2700, 3000, 2800, 3500, 3700, 3800};
-        int[] expense = {2200, 2700, 2900, 2800, 2600, 3000, 3300, 3400};
+        XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+//        int[] x = {1, 2, 3, 4, 5, 6, 7, 8};
+//        int[] income = {2000, 2500, 2700, 3000, 2800, 3500, 3700, 3800};
+//        int[] expense = {2200, 2700, 2900, 2800, 2600, 3000, 3300, 3400};
 
         // Creating an  XYSeries for Income
         XYSeries incomeSeries = new XYSeries("Income");
@@ -334,10 +327,11 @@ public class MainActivity extends AppCompatActivity {
         // Creating XYSeriesRenderer to customize incomeSeries
         if (incomeRenderer == null) {
             incomeRenderer = new XYSeriesRenderer();
-            incomeRenderer.setColor(Color.BLUE);
+            incomeRenderer.setColor(getResources().getColor(R.color.blue));
             incomeRenderer.setPointStyle(PointStyle.SQUARE);
             incomeRenderer.setFillPoints(true);
             incomeRenderer.setLineWidth(2);
+            incomeRenderer.setChartValuesTextSize(20);
             incomeRenderer.setDisplayChartValues(true);
 
         }
@@ -363,6 +357,8 @@ public class MainActivity extends AppCompatActivity {
             multiRenderer.setShowLabels(true, false);
             multiRenderer.setShowLegend(false);
             multiRenderer.setEnableBlackBackground(false);
+            multiRenderer.setLabelsTextSize(15);
+//            multiRenderer.setXLabelsColor(Color.CYAN);
 //            multiRenderer.setShowLabels(false);
 //            multiRenderer.setBackgroundColor(Color.GRAY);
 //            multiRenderer.setApplyBackgroundColor(true);
@@ -390,7 +386,7 @@ public class MainActivity extends AppCompatActivity {
 
 //        mChart = (AbstractChart) intent.getExtras().getSerializable(ChartFactory.CHART);
 //        mView = new GraphicalView(this, mChart);
-        return MyChartFactory.getConciseLineChartView(getContext(), dataset, multiRenderer);
+        return ChartFactory.getLineChartView(this, dataset, multiRenderer);
 //        String title = intent.getExtras().getString(ChartFactory.TITLE);
 //        if (title == null) {
 //            requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -419,7 +415,21 @@ public class MainActivity extends AppCompatActivity {
             ShowTask dft = new ShowTask();
             dft.execute();
         } else if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-
+            mTrick++;
+            if (mTrick > 5) {
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                assert fab != null;
+                fab.setVisibility(View.VISIBLE);
+                fab.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mTrick = mTrick < 0 ? 0 : -1;
+                        Snackbar.make(view, "Replace with your own action" + mTrick, Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+                    }
+                });
+                mTrick = 0;
+            }
         }
 
     }
@@ -456,22 +466,31 @@ public class MainActivity extends AppCompatActivity {
         final StringBuilder outputBuilder = new StringBuilder();
         String[] dates;
         int[] outCnts;
-
+        int mRowLimit = 0;
         public ShowTask() {
         }
 
         protected Boolean doInBackground(Integer... params) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            if (mTrick < 0) {
+                mRowLimit = mTrick;
+            }
+            SimpleDateFormat dateFormat;
+            if (mRowLimit < 0) {
+                dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            } else {
+                dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            }
             TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
-            Cursor cr = traceLogDBManager.getData(-1, "asc");
+            Cursor cr = traceLogDBManager.getData(mRowLimit, "asc");
             int all = 0;
             if (cr != null && cr.getCount() > 0) {
 
                 dates = new String[cr.getCount()];
                 outCnts = new int[cr.getCount()];
                 int i = 0;
-                while (cr.moveToNext()) {
-                    all = cr.getInt(0) + cr.getInt(1) + cr.getInt(2);
+                if (mRowLimit >= 0) {
+                    while (cr.moveToNext()) {
+                        all = cr.getInt(0) + cr.getInt(1) + cr.getInt(2);
 //                    outputBuilder.append(dateFormat.format(cr.getLong(3))).append(":").append(Integer.toString(all)  ).append("\n");
 //                    Log.i(TAG,outputBuilder.toString());
 //                    Log.i(TAG, dateFormat.format(cr.getInt(5)) + "--" + Integer.toString(all) + "--" + dateFormat.format(cr.getInt(6)))
@@ -480,10 +499,27 @@ public class MainActivity extends AppCompatActivity {
 //                    Log.i(TAG, dateFormat.format(cr.getLong(3))+ ":"
 //                            + Integer.toString(all)  );
 
-                    dates[i] = dateFormat.format(cr.getLong(3));
-                    outCnts[i] = all;
-                    i++;
+                        dates[i] = dateFormat.format(cr.getLong(3));
+                        outCnts[i] = all;
+                        i++;
 
+                    }
+                } else {
+                    while (cr.moveToNext()) {
+                        all = cr.getInt(0) + cr.getInt(1) + cr.getInt(2);
+//                    outputBuilder.append(dateFormat.format(cr.getLong(3))).append(":").append(Integer.toString(all)  ).append("\n");
+//                    Log.i(TAG,outputBuilder.toString());
+//                    Log.i(TAG, dateFormat.format(cr.getInt(5)) + "--" + Integer.toString(all) + "--" + dateFormat.format(cr.getInt(6)))
+//                    System.out.println("++++"+outputBuilder.toString());
+
+//                    Log.i(TAG, dateFormat.format(cr.getLong(3))+ ":"
+//                            + Integer.toString(all)  );
+
+                        dates[i] = dateFormat.format(cr.getLong(3)) + "\n" + dateFormat.format(cr.getLong(4));
+                        outCnts[i] = all;
+                        i++;
+
+                    }
                 }
             } else {
                 return false;

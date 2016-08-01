@@ -13,7 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import practices.my.countstep.MainActivity;
+import practices.my.countstep.common.db.ContextSaver;
 
 
 public class TraceLogDBManager extends SQLiteOpenHelper {
@@ -31,7 +31,7 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
     public static TraceLogDBManager GetInstance()
     {
         if(mInstance==null){
-            mInstance = new TraceLogDBManager(MainActivity.getContext(),null);
+            mInstance = new TraceLogDBManager(ContextSaver.getContext(), null);
         }
         return mInstance;
     }
@@ -120,39 +120,40 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
             e.printStackTrace();
         }
     }
+
+    private void setContent(ContentValues cv, Date startTime, Date endTime, int[] cnts) {
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_START, startTime.getTime());
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_END, endTime.getTime());
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT13, cnts[0]);
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT12, cnts[1]);
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT11, cnts[2]);
+        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT10, cnts[3]);
+    }
     //添加
     public long insertData(Date startTime, Date endTime, int[] cnts, SQLiteDatabase db) throws ParseException {
 
         ContentValues cv = new ContentValues();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
         cv.put(TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE,  dateFormat.parse(dateFormat.format(startTime)).getTime());
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_START, startTime.getTime());
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_END,endTime.getTime());
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT13, cnts[0]);
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT12, cnts[1]);
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT11, cnts[2]);
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT10, cnts[3]);
         cv.put(TraceLogDB.Entry.COLUMN_NAME_DEL, false);
-
+        setContent(cv, startTime, endTime, cnts);
         return db.insert(TraceLogDB.Entry.TABLE_NAME, null, cv);
     }
 
-    public long insertData(Date startTime, Date endTime, int[] cnts) throws ParseException {
+    public long insertData(Date startTime, Date endTime, int[] cnts) {
 
         SQLiteDatabase db = getWritableDatabase();
-        return insertData(startTime, endTime, cnts, db);
+        try {
+            return insertData(startTime, endTime, cnts, db);
+        } catch (ParseException e) {
+            return -1;
+        }
     }
     //添加
-    public long updateData(Date startTime ,Date endTime, int[] cnts) throws ParseException {
-
+    public long updateData(Date startTime, Date endTime, int[] cnts) {
         SQLiteDatabase db =getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_END,endTime.getTime());
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT13, cnts[0]);
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT12, cnts[1]);
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT11, cnts[2]);
-        cv.put(TraceLogDB.Entry.COLUMN_NAME_CNT10, cnts[3]);
+        setContent(cv, startTime, endTime, cnts);
         String[] args = {Long.toString(startTime.getTime())};
         return db.update(TraceLogDB.Entry.TABLE_NAME, cv, TraceLogDB.Entry.COLUMN_NAME_START + "=?",args);
     }
@@ -187,41 +188,45 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
 //        }
         return cur;
     }
+
+    private StringBuilder outputBuilder = new StringBuilder();
+    private final String sql = "select sum(" + TraceLogDB.Entry.COLUMN_NAME_CNT13 + ") , sum(" +
+            TraceLogDB.Entry.COLUMN_NAME_CNT12 + "),sum(" +
+            TraceLogDB.Entry.COLUMN_NAME_CNT11 + "),"
+            + TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE
+            + " from "
+            + TraceLogDB.Entry.TABLE_NAME
+            + " group by " + TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE;
+    private final String sqlment = "select " + TraceLogDB.Entry.COLUMN_NAME_CNT13 + "," +
+            TraceLogDB.Entry.COLUMN_NAME_CNT12 + "," +
+            TraceLogDB.Entry.COLUMN_NAME_CNT11 + ","
+            + TraceLogDB.Entry.COLUMN_NAME_START + ","
+            + TraceLogDB.Entry.COLUMN_NAME_END
+            + " from "
+            + TraceLogDB.Entry.TABLE_NAME;
     public Cursor getData(int row,String sort){
         Cursor cur = null;
         try{
             String ord = (sort==null|| sort.toLowerCase().startsWith("a"))?" asc":" desc";
-            String sql = "select sum(" + TraceLogDB.Entry.COLUMN_NAME_CNT13 + ") , sum(" +
-                    TraceLogDB.Entry.COLUMN_NAME_CNT12 + "),sum(" +
-                    TraceLogDB.Entry.COLUMN_NAME_CNT11 + "),"
-                    +  TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE
-                    + " from "
-                    + TraceLogDB.Entry.TABLE_NAME
-                    + " group by " + TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE;
+
+            outputBuilder.append(sql);
             String[] args = {String.valueOf(row)};
             if(row>0){
-                sql +=" limit ?";
+                outputBuilder.append(" limit ?");
             }else{
                 args=null;
             }
-            cur = ExecSQLForCursor(sql,args);
+
+            if (row < 0) {
+                cur = ExecSQLForCursor(sqlment, args);
+            } else {
+                cur = ExecSQLForCursor(outputBuilder.toString(), args);
+            }
         }catch (Exception e) {
             cur = null;
-//            Log.e("SearchPhoto Exception",e.getMessage());
-            e.printStackTrace();
         }
+        outputBuilder = new StringBuilder();
         return cur;
-    }
-    //修改照片信息
-    public int UpdateUserPhoto(int photoId,int classId,String title,String content, String tag){
-        SQLiteDatabase db =getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put("classId", classId);
-        cv.put("title", title);
-        cv.put("content", content);
-        cv.put("tag", tag);
-        String[] args = {String.valueOf(photoId)};
-        return db.update(TraceLogDB.Entry.TABLE_NAME, cv, "photoId=?",args);
     }
     //删除照片信息
     public int DeleteUserPhoto(int photoId){

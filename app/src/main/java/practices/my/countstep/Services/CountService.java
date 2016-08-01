@@ -20,7 +20,6 @@ import android.support.annotation.Nullable;
 
 import java.text.ParseException;
 import java.util.Date;
-import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -86,7 +85,8 @@ public class CountService extends Service implements SensorEventListener {
     @Override
     public void onDestroy(){
         System.out.println("ds********************************");
-        InsertTask dft = new InsertTask(true);
+        schService.shutdownNow();
+        dft.setEndCnt(true);
         new Thread(dft).start();
         mWakeLock.release();
 
@@ -99,29 +99,28 @@ public class CountService extends Service implements SensorEventListener {
     private  SensorManager mSensorManager = null;
     private  Sensor mAcceleromete = null;
     private Handler mHandler;
-    private Date startTime;
-    private Timer timer = new Timer();
     public void setmHandler(Handler mHandler){
         this.mHandler = mHandler;
     }
+
+    private ScheduledExecutorService schService = Executors.newScheduledThreadPool(10);
+    private InsertTask dft = new InsertTask();
     @Override
     public int onStartCommand(Intent intent,
                                int flags,
                                int startId){
         System.out.println("onStartCommand********************");
         if( intent.getBooleanExtra(getString(R.string.ser_switch),false)){
-            startTime = new  Date(System.currentTimeMillis());
             mWakeLock.acquire();
             mSensorManager.registerListener(this, mAcceleromete,
                     SensorManager.SENSOR_DELAY_NORMAL);
 
-            ScheduledExecutorService service = Executors.newScheduledThreadPool(10);
-
+            // 从现在开始1秒钟之后，每隔1秒钟执行一次job1
             long initialDelay1 = 1;
             long period1 = 1;
-            // 从现在开始1秒钟之后，每隔1秒钟执行一次job1
-            service.scheduleAtFixedRate(
-                    new InsertTask(false), initialDelay1,
+            dft.setEndCnt(false);
+            schService.scheduleAtFixedRate(
+                    dft, initialDelay1,
                     period1, TimeUnit.MINUTES);
 
 
@@ -181,9 +180,12 @@ public class CountService extends Service implements SensorEventListener {
         }
 
     }
-    private synchronized void oSCCntUp(int idx){
-        if(idx < 3) oSC[oSC.length - 1]++;
-        oSC[idx]++;
+
+    private void oSCCntUp(int idx) {
+        synchronized (oSC) {
+            if (idx < 3) oSC[oSC.length - 1]++;
+            oSC[idx]++;
+        }
     }
 
     private int oAC= 0;
@@ -194,9 +196,11 @@ public class CountService extends Service implements SensorEventListener {
     }
 
     public void clearCntStep(){
-        for(int i=0;i<oSC.length;i++){
-            oSC[i] = 0;
-            sendMsg(i);
+        synchronized (oSC) {
+            for (int i = 0; i < oSC.length; i++) {
+                oSC[i] = 0;
+                sendMsg(i);
+            }
         }
     }
     private void sendMsg(int idx){
@@ -212,32 +216,34 @@ public class CountService extends Service implements SensorEventListener {
     }
     public static final String TAG = "CountService";
     private class InsertTask extends TimerTask implements Runnable{
-
-        private Date  endTime;
         private Boolean isEndCnt = false;
+        private Date startTime;
 //        private int[] cnts;
-        public InsertTask(boolean isShutDown) {
-//            this.startTime = startTime;
-//            this.cnts = cnts;
-            endTime = new  Date(System.currentTimeMillis());
-            if (isShutDown){
-                isEndCnt = true;
-            }else if(startTime.getDate()!=endTime.getDate()){
-                isEndCnt = true;
-            }
+public InsertTask() {
+    startTime = new Date(System.currentTimeMillis());
+        }
+
+        public synchronized void setEndCnt(boolean isShutDown) {
+            isEndCnt = isShutDown;
         }
         @Override
         public void run(){
+            Date endTime = new Date(System.currentTimeMillis());
+            synchronized (isEndCnt) {
+                if (!isEndCnt && startTime.getDate() != endTime.getDate()) {
+                    isEndCnt = true;
+                }
+            }
             TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
-            long res = 0;
             try {
-                res = traceLogDBManager.dealData(startTime,endTime,oSC);
+                long res = traceLogDBManager.dealData(startTime, endTime, oSC);
             } catch (ParseException e) {
             }
             if (isEndCnt){
                 clearCntStep();
-                startTime = new  Date(System.currentTimeMillis());
+                isEndCnt = !isEndCnt;
             }
+            startTime.setTime(endTime.getTime());
 
         }
 //        protected Boolean doInBackground(Integer... params) {
