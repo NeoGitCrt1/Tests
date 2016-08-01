@@ -31,10 +31,20 @@ import java.util.TreeMap;
  * scatter... charts.
  */
 public class XYSeries implements Serializable {
-    /** The series title. */
-    private String mTitle;
     /** A map to contain values for X and Y axes and index for each bundle */
     private final IndexXYMap<Double, Double> mXY = new IndexXYMap<Double, Double>();
+    /**
+     * The scale number for this series.
+     */
+    private final int mScaleNumber;
+    /**
+     * A map contain a (x,y) value for each String annotation.
+     */
+    private final IndexXYMap<Double, Double> mStringXY = new IndexXYMap<Double, Double>();
+    /**
+     * The series title.
+     */
+    private String mTitle;
     /** The minimum value for the X axis. */
     private double mMinX = MathHelper.NULL_VALUE;
     /** The maximum value for the X axis. */
@@ -43,12 +53,8 @@ public class XYSeries implements Serializable {
     private double mMinY = MathHelper.NULL_VALUE;
     /** The maximum value for the Y axis. */
     private double mMaxY = -MathHelper.NULL_VALUE;
-    /** The scale number for this series. */
-    private final int mScaleNumber;
     /** Contains the annotations. */
     private List<String> mAnnotations = new ArrayList<String>();
-    /** A map contain a (x,y) value for each String annotation. */
-    private final IndexXYMap<Double, Double> mStringXY = new IndexXYMap<Double, Double>();
 
     /**
      * Builds a new XY series.

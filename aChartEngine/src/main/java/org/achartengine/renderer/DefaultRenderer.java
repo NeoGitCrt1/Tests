@@ -26,10 +26,6 @@ import java.util.List;
  * An abstract renderer to be extended by the multiple series classes.
  */
 public class DefaultRenderer implements Serializable {
-    /** The chart title. */
-    private String mChartTitle = "";
-    /** The chart title text size. */
-    private float mChartTitleTextSize = 15;
     /** A no color constant. */
     public static final int NO_COLOR = 0;
     /** The default background color. */
@@ -39,6 +35,14 @@ public class DefaultRenderer implements Serializable {
     /** A text font for regular text, like the chart labels. */
     private static final Typeface REGULAR_TEXT_FONT = Typeface
             .create(Typeface.SERIF, Typeface.NORMAL);
+    /**
+     * The chart title.
+     */
+    private String mChartTitle = "";
+    /**
+     * The chart title text size.
+     */
+    private float mChartTitleTextSize = 15;
     /** The typeface name for the texts. */
     private String mTextTypefaceName = REGULAR_TEXT_FONT.toString();
     /** The typeface style for the texts. */
@@ -376,6 +380,16 @@ public class DefaultRenderer implements Serializable {
     }
 
     /**
+     * Sets if the labels should be visible.
+     *
+     * @param showLabels the visibility flag for the labels
+     */
+    public void setShowLabels(boolean showLabels) {
+        mShowXLabels = showLabels;
+        mShowYLabels = showLabels;
+    }
+
+    /**
      * Returns if the X labels should be visible.
      *
      * @return the visibility flag for the X labels
@@ -405,16 +419,6 @@ public class DefaultRenderer implements Serializable {
     }
 
     /**
-     * Sets if the labels should be visible.
-     *
-     * @param showLabels the visibility flag for the labels
-     */
-    public void setShowLabels(boolean showLabels) {
-        mShowXLabels = showLabels;
-        mShowYLabels = showLabels;
-    }
-
-    /**
      * Returns if the tick marks should be visible.
      *
      * @return
@@ -428,8 +432,8 @@ public class DefaultRenderer implements Serializable {
      *
      * @param showTickMarks the visibility flag for the tick marks
      */
-    public void setShowTickMarks(boolean mShowTickMarks) {
-        this.mShowTickMarks = mShowTickMarks;
+    public void setShowTickMarks(boolean showTickMarks) {
+        this.mShowTickMarks = showTickMarks;
     }
 
     /**
@@ -442,15 +446,6 @@ public class DefaultRenderer implements Serializable {
     }
 
     /**
-     * Returns if the Y axis grid should be visible.
-     *
-     * @return the visibility flag for the Y axis grid
-     */
-    public boolean isShowGridY() {
-        return mShowGridY;
-    }
-
-    /**
      * Sets if the X axis grid should be visible.
      *
      * @param showGrid the visibility flag for the X axis grid
@@ -460,12 +455,21 @@ public class DefaultRenderer implements Serializable {
     }
 
     /**
-     * Sets the grid line width.
+     * Returns if the Y axis grid should be visible.
      *
-     * @param width the grid size
+     * @return the visibility flag for the Y axis grid
      */
-    public void setGridLineWidth(float width) {
-        mGridLineWidth = width;
+    public boolean isShowGridY() {
+        return mShowGridY;
+    }
+
+    /**
+     * Sets if the Y axis grid should be visible.
+     *
+     * @param showGrid the visibility flag for the Y axis grid
+     */
+    public void setShowGridY(boolean showGrid) {
+        mShowGridY = showGrid;
     }
 
     /**
@@ -478,12 +482,12 @@ public class DefaultRenderer implements Serializable {
     }
 
     /**
-     * Sets if the Y axis grid should be visible.
+     * Sets the grid line width.
      *
-     * @param showGrid the visibility flag for the Y axis grid
+     * @param width the grid size
      */
-    public void setShowGridY(boolean showGrid) {
-        mShowGridY = showGrid;
+    public void setGridLineWidth(float width) {
+        mGridLineWidth = width;
     }
 
     /**
@@ -506,21 +510,21 @@ public class DefaultRenderer implements Serializable {
     }
 
     /**
-     * Returns if the Y axis custom text grid should be visible.
-     *
-     * @return the visibility flag for the custom text Y axis grid
-     */
-    public boolean isShowCustomTextGridY() {
-        return mShowCustomTextGridY;
-    }
-
-    /**
      * Sets if the X axis custom text grid should be visible.
      *
      * @param showGrid the visibility flag for the X axis custom text grid
      */
     public void setShowCustomTextGridX(boolean showGrid) {
         mShowCustomTextGridX = showGrid;
+    }
+
+    /**
+     * Returns if the Y axis custom text grid should be visible.
+     *
+     * @return the visibility flag for the custom text Y axis grid
+     */
+    public boolean isShowCustomTextGridY() {
+        return mShowCustomTextGridY;
     }
 
     /**
@@ -606,6 +610,15 @@ public class DefaultRenderer implements Serializable {
     }
 
     /**
+     * Sets the text typeface.
+     *
+     * @param typeface the typeface
+     */
+    public void setTextTypeface(Typeface typeface) {
+        mTextTypeface = typeface;
+    }
+
+    /**
      * Returns the legend text size.
      *
      * @return the legend text size
@@ -632,15 +645,6 @@ public class DefaultRenderer implements Serializable {
     public void setTextTypeface(String typefaceName, int style) {
         mTextTypefaceName = typefaceName;
         mTextTypefaceStyle = style;
-    }
-
-    /**
-     * Sets the text typeface.
-     *
-     * @param typeface the typeface
-     */
-    public void setTextTypeface(Typeface typeface) {
-        mTextTypeface = typeface;
     }
 
     /**
@@ -671,15 +675,6 @@ public class DefaultRenderer implements Serializable {
     }
 
     /**
-     * Returns the original value to be used for scaling the chart.
-     *
-     * @return the original scale value
-     */
-    public float getOriginalScale() {
-        return mOriginalScale;
-    }
-
-    /**
      * Sets the value to be used for scaling the chart. It works on some charts
      * like pie, doughnut, dial.
      *
@@ -687,6 +682,15 @@ public class DefaultRenderer implements Serializable {
      */
     public void setScale(float scale) {
         mScale = scale;
+    }
+
+    /**
+     * Returns the original value to be used for scaling the chart.
+     *
+     * @return the original scale value
+     */
+    public float getOriginalScale() {
+        return mOriginalScale;
     }
 
     /**
@@ -753,6 +757,15 @@ public class DefaultRenderer implements Serializable {
     }
 
     /**
+     * Sets the zoom rate.
+     *
+     * @param rate the zoom rate
+     */
+    public void setZoomRate(float rate) {
+        mZoomRate = rate;
+    }
+
+    /**
      * Returns the enabled state of the pan.
      *
      * @return if pan is enabled
@@ -768,15 +781,6 @@ public class DefaultRenderer implements Serializable {
      */
     public void setPanEnabled(boolean enabled) {
         mPanEnabled = enabled;
-    }
-
-    /**
-     * Sets the zoom rate.
-     *
-     * @param rate the zoom rate
-     */
-    public void setZoomRate(float rate) {
-        mZoomRate = rate;
     }
 
     /**

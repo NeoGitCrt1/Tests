@@ -44,13 +44,6 @@ public class BarChart extends XYChart {
     /** The previous series Y axis point limits to be used for HEAP type bar charts. */
     private List<Float> mPreviousSeriesPoints;
 
-    /**
-     * The bar chart type enum.
-     */
-    public enum Type {
-        DEFAULT, STACKED, HEAPED
-    }
-
     BarChart() {
     }
 
@@ -358,5 +351,12 @@ public class BarChart extends XYChart {
      */
     public String getChartType() {
         return TYPE;
+    }
+
+    /**
+     * The bar chart type enum.
+     */
+    public enum Type {
+        DEFAULT, STACKED, HEAPED
     }
 }

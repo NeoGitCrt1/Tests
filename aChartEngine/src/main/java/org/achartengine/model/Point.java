@@ -38,12 +38,12 @@ public final class Point implements Serializable {
         return mX;
     }
 
-    public float getY() {
-        return mY;
-    }
-
     public void setX(float x) {
         mX = x;
+    }
+
+    public float getY() {
+        return mY;
     }
 
     public void setY(float y) {

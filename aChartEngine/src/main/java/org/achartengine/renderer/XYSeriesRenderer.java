@@ -21,7 +21,6 @@ import android.graphics.Paint.Align;
 import org.achartengine.chart.PointStyle;
 import org.achartengine.renderer.XYSeriesRenderer.FillOutsideLine.Type;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,78 +54,6 @@ public class XYSeriesRenderer extends SimpleSeriesRenderer {
     private Align mAnnotationsTextAlign = Align.CENTER;
     /** The annotations color. */
     private int mAnnotationsColor = DefaultRenderer.TEXT_COLOR;
-
-    /**
-     * A descriptor for the line fill behavior.
-     */
-    public static class FillOutsideLine implements Serializable {
-        public enum Type {
-            NONE, BOUNDS_ALL, BOUNDS_BELOW, BOUNDS_ABOVE, BELOW, ABOVE
-        }
-
-        /** The fill type. */
-        private final Type mType;
-        /** The fill color. */
-        private int mColor = Color.argb(125, 0, 0, 200);
-        /** The fill points index range. */
-        private int[] mFillRange;
-
-        /**
-         * The line fill behavior.
-         *
-         * @param type the fill type
-         */
-        public FillOutsideLine(Type type) {
-            this.mType = type;
-        }
-
-        /**
-         * Returns the fill color.
-         *
-         * @return the fill color
-         */
-        public int getColor() {
-            return mColor;
-        }
-
-        /**
-         * Sets the fill color
-         *
-         * @param color the fill color
-         */
-        public void setColor(int color) {
-            mColor = color;
-        }
-
-        /**
-         * Returns the fill type.
-         *
-         * @return the fill type
-         */
-        public Type getType() {
-            return mType;
-        }
-
-        /**
-         * Returns the fill range which is the minimum and maximum data index values
-         * for the fill.
-         *
-         * @return the fill range
-         */
-        public int[] getFillRange() {
-            return mFillRange;
-        }
-
-        /**
-         * Sets the fill range which is the minimum and maximum data index values
-         * for the fill.
-         *
-         * @param range the fill range
-         */
-        public void setFillRange(int[] range) {
-            mFillRange = range;
-        }
-    }
 
     /**
      * Returns if the chart should be filled below the line.
@@ -407,6 +334,84 @@ public class XYSeriesRenderer extends SimpleSeriesRenderer {
      */
     public void setAnnotationsColor(int color) {
         mAnnotationsColor = color;
+    }
+
+    /**
+     * A descriptor for the line fill behavior.
+     */
+    public static class FillOutsideLine {
+        /**
+         * The fill type.
+         */
+        private final Type mType;
+        /**
+         * The fill color.
+         */
+        private int mColor = Color.argb(125, 0, 0, 200);
+        /**
+         * The fill points index range.
+         */
+        private int[] mFillRange;
+
+        /**
+         * The line fill behavior.
+         *
+         * @param type the fill type
+         */
+        public FillOutsideLine(Type type) {
+            this.mType = type;
+        }
+
+        /**
+         * Returns the fill color.
+         *
+         * @return the fill color
+         */
+        public int getColor() {
+            return mColor;
+        }
+
+        /**
+         * Sets the fill color
+         *
+         * @param color the fill color
+         */
+        public void setColor(int color) {
+            mColor = color;
+        }
+
+        /**
+         * Returns the fill type.
+         *
+         * @return the fill type
+         */
+        public Type getType() {
+            return mType;
+        }
+
+        /**
+         * Returns the fill range which is the minimum and maximum data index values
+         * for the fill.
+         *
+         * @return the fill range
+         */
+        public int[] getFillRange() {
+            return mFillRange;
+        }
+
+        /**
+         * Sets the fill range which is the minimum and maximum data index values
+         * for the fill.
+         *
+         * @param range the fill range
+         */
+        public void setFillRange(int[] range) {
+            mFillRange = range;
+        }
+
+        public enum Type {
+            NONE, BOUNDS_ALL, BOUNDS_BELOW, BOUNDS_ABOVE, BELOW, ABOVE
+        }
     }
 
 }

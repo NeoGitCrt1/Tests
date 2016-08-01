@@ -27,6 +27,18 @@ import java.util.List;
  * The zoom tool.
  */
 public class Zoom extends AbstractTool {
+    /**
+     * Zoom on X axis and Y axis
+     */
+    public static final int ZOOM_AXIS_XY = 0;
+    /**
+     * Zoom on X axis independently
+     */
+    public static final int ZOOM_AXIS_X = 1;
+    /**
+     * Zoom on Y axis independently
+     */
+    public static final int ZOOM_AXIS_Y = 2;
     /** A flag to be used to know if this is a zoom in or out. */
     private boolean mZoomIn;
     /** The zoom rate. */
@@ -37,13 +49,6 @@ public class Zoom extends AbstractTool {
     private boolean limitsReachedX = false;
     /** Zoom limits reached on the Y axis. */
     private boolean limitsReachedY = false;
-
-    /** Zoom on X axis and Y axis */
-    public static final int ZOOM_AXIS_XY = 0;
-    /** Zoom on X axis independently */
-    public static final int ZOOM_AXIS_X = 1;
-    /** Zoom on Y axis independently */
-    public static final int ZOOM_AXIS_Y = 2;
 
     /**
      * Builds the zoom tool.

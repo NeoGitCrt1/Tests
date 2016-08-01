@@ -27,7 +27,6 @@ import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
 import org.achartengine.chart.AbstractChart;
 import org.achartengine.chart.PointStyle;
@@ -40,27 +39,60 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import practices.my.countstep.DBManager.TraceLogDBManager;
+import practices.my.countstep.MyChartRenderer.MyChartFactory;
 import practices.my.countstep.Services.CountService;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String TAG = "MainActivity";
+    private static MainActivity instance;
+    boolean mBind = false;
     private Intent serviceItent;
     private CountService countService;
-
     private TextView[] tv;
     private TextView tv0,tvInScl;
     private Switch sw;
     private ScrollView mScrollView;
+    private int nowCnt = 0;
+    private Handler mHandler;
+    private ServiceConnection serviceConnection = new ServiceConnection() {
 
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
 
-    private static MainActivity instance;
-    public static Context getContext()
-    {
-        return instance;
-    }
+            countService = ((CountService.CountServiceBinder) service).getService();
+            countService.setmHandler(mHandler);
+            startService(serviceItent);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName className) {
+            countService = null;
+        }
+
+    };
+    private String[] mMonth = new String[]{
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    };
+    /**
+     * The encapsulated graphical view.
+     */
+    private GraphicalView mView;
+    /**
+     * The chart to be drawn.
+     */
+    private AbstractChart mChart;
+    private XYSeriesRenderer incomeRenderer;
+    private XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+    private XYMultipleSeriesRenderer multiRenderer;
 
     public MainActivity() {
         instance = this;
+    }
+
+    public static Context getContext() {
+        return instance;
     }
 
     @Override
@@ -69,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 //        System.out.println("app Create******************************");
-        serviceItent = new Intent(this,CountService.class);
+        serviceItent = new Intent(this, CountService.class);
 
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -83,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
 
         initLandAndPort();
 
-        mHandler = new Handler(){
+        mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 nowCnt = msg.arg1;
@@ -150,10 +182,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
     }
-
-    private int nowCnt = 0;
 
     private void initLandAndPort() {
         setContentView(R.layout.activity_main);
@@ -169,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
         changeTxt(nowCnt);
 
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -199,10 +229,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private Handler mHandler;
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
 //        System.out.println("app Resume******************************");
         sw.setChecked(mBind);
@@ -210,8 +239,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
     @Override
-    public void onPause(){
+    public void onPause() {
 
         super.onPause();
 //        System.out.println("app Pause******************************");
@@ -220,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
         mHandler.removeMessages(2);
         mHandler.removeMessages(3);
     }
+
     @Override
     public void onStop() {
         super.onStop();
@@ -230,23 +261,8 @@ public class MainActivity extends AppCompatActivity {
 //        System.out.println("app stop******************************");
 
     }
-    private ServiceConnection serviceConnection = new ServiceConnection() {
 
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-
-            countService = ((CountService.CountServiceBinder)service).getService();
-            countService.setmHandler(mHandler);
-            startService(serviceItent);
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName className) {
-            countService = null;
-        }
-
-    };
-    private void changeTxt(int idx, String str){
+    private void changeTxt(int idx, String str) {
         tv[idx].setText(str);
     }
 
@@ -261,137 +277,36 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    class SwitchTouchListener implements View.OnTouchListener{
-        private static final int MAX_CLICK_DURATION = 200;
-        private long startClickTime;
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN: {
-                    startClickTime = Calendar.getInstance().getTimeInMillis();
-                    break;
-                }
-                case MotionEvent.ACTION_UP: {
-                    long clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
-                    if(clickDuration < MAX_CLICK_DURATION) {
-                        Switch sw = (Switch)v;
-//                        sw.toggle();
-//                        System.out.println("sw++++++++++++++" + sw.isChecked());
-
-                        toggleBindService();
-                        sw.setChecked(mBind);
-//                        System.out.println("sw--------------" + sw.isChecked());
-                    }
-                }
-            }
-            return true;
-        }
-    }
-    boolean mBind = false;
-    private void toggleBindService(){
+    private void toggleBindService() {
         if (mBind) {
             unbindService(serviceConnection);
-            serviceItent.putExtra( getString(R.string.ser_switch),false);
+            serviceItent.putExtra(getString(R.string.ser_switch), false);
             stopService(serviceItent);
-        }else{
-            serviceItent.putExtra( getString(R.string.ser_switch),true);
+        } else {
+            serviceItent.putExtra(getString(R.string.ser_switch), true);
             bindService(serviceItent, serviceConnection, Context.BIND_AUTO_CREATE);
         }
         mBind = !mBind;
     }
+
     @Override
 
-    protected void onDestroy(){
+    protected void onDestroy() {
         super.onDestroy();
 // PREVENT leaked ServiceConnection
         if (mBind) {
             unbindService(serviceConnection);
-            serviceItent.putExtra( getString(R.string.ser_switch),false);
+            serviceItent.putExtra(getString(R.string.ser_switch), false);
             stopService(serviceItent);
         }
     }
+
     @Override
-    public void onBackPressed(){
+    public void onBackPressed() {
         finish();
     }
 
-    public static final String TAG = "MainActivity";
-
-    private class ShowTask extends AsyncTask<Integer, Integer, Boolean> {
-        final StringBuilder outputBuilder = new StringBuilder();
-
-        public ShowTask() {
-        }
-
-        String[] dates;
-        int[] outCnts;
-        protected Boolean doInBackground(Integer... params) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
-            Cursor cr = traceLogDBManager.getData(-1,"asc");
-            int all = 0;
-            if (cr != null && cr.getCount() > 0) {
-
-                dates = new String[cr.getCount()];
-                outCnts = new int[cr.getCount()];
-                int i = 0;
-                while (cr.moveToNext()) {
-                    all = cr.getInt(0) + cr.getInt(1) + cr.getInt(2);
-//                    outputBuilder.append(dateFormat.format(cr.getLong(3))).append(":").append(Integer.toString(all)  ).append("\n");
-//                    Log.i(TAG,outputBuilder.toString());
-//                    Log.i(TAG, dateFormat.format(cr.getInt(5)) + "--" + Integer.toString(all) + "--" + dateFormat.format(cr.getInt(6)))
-//                    System.out.println("++++"+outputBuilder.toString());
-
-//                    Log.i(TAG, dateFormat.format(cr.getLong(3))+ ":"
-//                            + Integer.toString(all)  );
-
-                    dates[i] = dateFormat.format(cr.getLong(3));
-                    outCnts[i] = all;
-                    i++;
-
-                }
-            }else{
-                return  false;
-
-            }
-            return true;
-        }
-
-        protected void onProgressUpdate(Integer... progress) {
-//            setProgressPercent(progress[0]);
-        }
-
-        protected void onPostExecute(Boolean result) {
-//            System.out.println("++++"+outputBuilder.toString());
-//            tvInScl.setText(outputBuilder.toString());
-//            mScrollView.fullScroll(ScrollView.FOCUS_DOWN);
-            if (dates != null && outCnts != null) {
-                showChart(dates, outCnts);
-            }
-
-        }
-    }
-
-    private String[] mMonth = new String[]{
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    };
-
-    /**
-     * The encapsulated graphical view.
-     */
-    private GraphicalView mView;
-    private boolean isChartReady = false;
-    /**
-     * The chart to be drawn.
-     */
-    private AbstractChart mChart;
-    private XYSeriesRenderer incomeRenderer;
-    private XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-    private XYMultipleSeriesRenderer multiRenderer;
-
     private GraphicalView openChart(String[] dates, int[] cnts) {
-        isChartReady = false;
         dataset.clear();
         int[] x = {1, 2, 3, 4, 5, 6, 7, 8};
         int[] income = {2000, 2500, 2700, 3000, 2800, 3500, 3700, 3800};
@@ -431,27 +346,36 @@ public class MainActivity extends AppCompatActivity {
 //        expenseRenderer.setFillPoints(true);
 //        expenseRenderer.setLineWidth(2);
 //        expenseRenderer.setDisplayChartValues(true);
-
         // Creating a XYMultipleSeriesRenderer to customize the whole chart
         if (multiRenderer == null) {
             multiRenderer = new XYMultipleSeriesRenderer();
             multiRenderer.setXLabels(0);
-            multiRenderer.setChartTitle("Income vs Expense Chart");
-            multiRenderer.setXTitle("Year 2012");
-            multiRenderer.setYTitle("Amount in Dollars");
+//            multiRenderer.setChartTitle("Income vs Expense Chart");
+//            multiRenderer.setXTitle("Year 2012");
+//            multiRenderer.setYTitle("Amount in Dollars");
             multiRenderer.setZoomButtonsVisible(false);
             multiRenderer.setAntialiasing(true);
-            multiRenderer.setBackgroundColor(Color.WHITE);
-            for (int i = 0; i < dates.length; i++) {
-                multiRenderer.addXTextLabel(i + 1, dates[i]);
-            }
+            multiRenderer.setShowGridX(true);
+            multiRenderer.setShowGridY(false);
+            multiRenderer.setShowLabels(true, false);
+            multiRenderer.setShowLegend(false);
+            multiRenderer.setEnableBlackBackground(false);
+//            multiRenderer.setShowLabels(false);
+//            multiRenderer.setBackgroundColor(Color.GRAY);
+//            multiRenderer.setApplyBackgroundColor(true);
+//            for (int i = 0; i < dates.length; i++) {
+//                multiRenderer.addXTextLabel(i + 1, dates[i]);
+//            }
 
             // Adding incomeRenderer and expenseRenderer to multipleRenderer
             // Note: The order of adding dataseries to dataset and renderers to multipleRenderer
             // should be same
             multiRenderer.addSeriesRenderer(incomeRenderer);
         }
-
+        multiRenderer.clearXTextLabels();
+        for (int i = 0; i < dates.length; i++) {
+            multiRenderer.addXTextLabel(i + 1, dates[i]);
+        }
 
 //        multiRenderer.addSeriesRenderer(expenseRenderer);
 
@@ -463,7 +387,7 @@ public class MainActivity extends AppCompatActivity {
 
 //        mChart = (AbstractChart) intent.getExtras().getSerializable(ChartFactory.CHART);
 //        mView = new GraphicalView(this, mChart);
-        return ChartFactory.getLineChartView(getContext(), dataset, multiRenderer);
+        return MyChartFactory.getConciseLineChartView(getContext(), dataset, multiRenderer);
 //        String title = intent.getExtras().getString(ChartFactory.TITLE);
 //        if (title == null) {
 //            requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -484,11 +408,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private boolean isTurned = false;
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        // TODO Auto-generated method stub
         super.onConfigurationChanged(newConfig);
         initLandAndPort();
         if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -498,5 +419,88 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+    }
+
+    class SwitchTouchListener implements View.OnTouchListener {
+        private static final int MAX_CLICK_DURATION = 200;
+        private long startClickTime;
+
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    startClickTime = Calendar.getInstance().getTimeInMillis();
+                    break;
+                }
+                case MotionEvent.ACTION_UP: {
+                    long clickDuration = Calendar.getInstance().getTimeInMillis() - startClickTime;
+                    if (clickDuration < MAX_CLICK_DURATION) {
+                        Switch sw = (Switch) v;
+//                        sw.toggle();
+//                        System.out.println("sw++++++++++++++" + sw.isChecked());
+
+                        toggleBindService();
+                        sw.setChecked(mBind);
+//                        System.out.println("sw--------------" + sw.isChecked());
+                    }
+                }
+            }
+            return true;
+        }
+    }
+
+    private class ShowTask extends AsyncTask<Integer, Integer, Boolean> {
+        final StringBuilder outputBuilder = new StringBuilder();
+        String[] dates;
+        int[] outCnts;
+
+        public ShowTask() {
+        }
+
+        protected Boolean doInBackground(Integer... params) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
+            Cursor cr = traceLogDBManager.getData(-1, "asc");
+            int all = 0;
+            if (cr != null && cr.getCount() > 0) {
+
+                dates = new String[cr.getCount()];
+                outCnts = new int[cr.getCount()];
+                int i = 0;
+                while (cr.moveToNext()) {
+                    all = cr.getInt(0) + cr.getInt(1) + cr.getInt(2);
+//                    outputBuilder.append(dateFormat.format(cr.getLong(3))).append(":").append(Integer.toString(all)  ).append("\n");
+//                    Log.i(TAG,outputBuilder.toString());
+//                    Log.i(TAG, dateFormat.format(cr.getInt(5)) + "--" + Integer.toString(all) + "--" + dateFormat.format(cr.getInt(6)))
+//                    System.out.println("++++"+outputBuilder.toString());
+
+//                    Log.i(TAG, dateFormat.format(cr.getLong(3))+ ":"
+//                            + Integer.toString(all)  );
+
+                    dates[i] = dateFormat.format(cr.getLong(3));
+                    outCnts[i] = all;
+                    i++;
+
+                }
+            } else {
+                return false;
+
+            }
+            return true;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+//            setProgressPercent(progress[0]);
+        }
+
+        protected void onPostExecute(Boolean result) {
+//            System.out.println("++++"+outputBuilder.toString());
+//            tvInScl.setText(outputBuilder.toString());
+//            mScrollView.fullScroll(ScrollView.FOCUS_DOWN);
+            if (dates != null && outCnts != null) {
+                showChart(dates, outCnts);
+            }
+
+        }
     }
 }

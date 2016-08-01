@@ -49,7 +49,7 @@ public class ChartFactory {
     /** The key for the chart graphical activity title. */
     public static final String TITLE = "title";
 
-    private ChartFactory() {
+    public ChartFactory() {
         // empty
     }
 
@@ -644,8 +644,8 @@ public class ChartFactory {
      *           if the dataset and the renderer don't include the same number of
      *           series
      */
-    private static void checkParameters(XYMultipleSeriesDataset dataset,
-                                        XYMultipleSeriesRenderer renderer) {
+    protected static void checkParameters(XYMultipleSeriesDataset dataset,
+                                          XYMultipleSeriesRenderer renderer) {
         if (dataset == null || renderer == null
                 || dataset.getSeriesCount() != renderer.getSeriesRendererCount()) {
             throw new IllegalArgumentException(

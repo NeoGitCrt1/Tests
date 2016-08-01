@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.achartengine.chart;
+package practices.my.countstep.MyChartRenderer;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
 
+import org.achartengine.chart.ClickableArea;
+import org.achartengine.chart.PointStyle;
+import org.achartengine.chart.ScatterChart;
+import org.achartengine.chart.XYChart;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.SimpleSeriesRenderer;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
@@ -32,24 +36,30 @@ import java.util.List;
 /**
  * The line chart rendering class.
  */
-public class LineChart extends XYChart {
-    /** The constant to identify this chart type. */
+public class ConciseLineChart extends XYChart {
+    /**
+     * The constant to identify this chart type.
+     */
     public static final String TYPE = "Line";
-    /** The legend shape width. */
+    /**
+     * The legend shape width.
+     */
     private static final int SHAPE_WIDTH = 30;
-    /** The scatter chart to be used to draw the data points. */
+    /**
+     * The scatter chart to be used to draw the data points.
+     */
     private ScatterChart pointsChart;
 
-    LineChart() {
+    ConciseLineChart() {
     }
 
     /**
      * Builds a new line chart instance.
      *
-     * @param dataset the multiple series dataset
+     * @param dataset  the multiple series dataset
      * @param renderer the multiple series renderer
      */
-    public LineChart(XYMultipleSeriesDataset dataset, XYMultipleSeriesRenderer renderer) {
+    public ConciseLineChart(XYMultipleSeriesDataset dataset, XYMultipleSeriesRenderer renderer) {
         super(dataset, renderer);
         pointsChart = new ScatterChart(dataset, renderer);
     }
@@ -57,7 +67,7 @@ public class LineChart extends XYChart {
     /**
      * Sets the series and the renderer.
      *
-     * @param dataset the series dataset
+     * @param dataset  the series dataset
      * @param renderer the series renderer
      */
     protected void setDatasetRenderer(XYMultipleSeriesDataset dataset,
@@ -69,13 +79,13 @@ public class LineChart extends XYChart {
     /**
      * The graphical representation of a series.
      *
-     * @param canvas the canvas to paint to
-     * @param paint the paint to be used for drawing
-     * @param points the array of points to be used for drawing the series
+     * @param canvas         the canvas to paint to
+     * @param paint          the paint to be used for drawing
+     * @param points         the array of points to be used for drawing the series
      * @param seriesRenderer the series seriesRenderer
-     * @param yAxisValue the minimum value of the y axis
-     * @param seriesIndex the index of the series currently being drawn
-     * @param startIndex the start index of the rendering points
+     * @param yAxisValue     the minimum value of the y axis
+     * @param seriesIndex    the index of the series currently being drawn
+     * @param startIndex     the start index of the rendering points
      */
     @Override
     public void drawSeries(Canvas canvas, Paint paint, List<Float> points, XYSeriesRenderer seriesRenderer,
@@ -217,12 +227,12 @@ public class LineChart extends XYChart {
     /**
      * The graphical representation of the legend shape.
      *
-     * @param canvas the canvas to paint to
-     * @param renderer the series renderer
-     * @param x the x value of the point the shape should be drawn at
-     * @param y the y value of the point the shape should be drawn at
+     * @param canvas      the canvas to paint to
+     * @param renderer    the series renderer
+     * @param x           the x value of the point the shape should be drawn at
+     * @param y           the y value of the point the shape should be drawn at
      * @param seriesIndex the series index
-     * @param paint the paint to be used for drawing
+     * @param paint       the paint to be used for drawing
      */
     public void drawLegendShape(Canvas canvas, SimpleSeriesRenderer renderer, float x, float y,
                                 int seriesIndex, Paint paint) {

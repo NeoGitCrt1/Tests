@@ -61,6 +61,10 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
     private boolean mZoomXEnabled = true;
     /** A flag for enabling or not the zoom on the Y axis . */
     private boolean mZoomYEnabled = true;
+    /**
+     * A flag for enabling or not the black bacgroud .
+     */
+    private boolean mBlackBackground = true;
     /** The spacing between bars, in bar charts. */
     private double mBarSpacing = 0;
     /** The margins colors. */
@@ -112,36 +116,20 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
     private double mZoomInLimitX = 0;
     /** The zoom in limit permitted in the axis Y */
     private double mZoomInLimitY = 0;
-
-    /**
-     * An enum for the XY chart orientation of the X axis.
-     */
-    public enum Orientation {
-        HORIZONTAL(0), VERTICAL(90);
-        /** The rotate angle. */
-        private int mAngle = 0;
-
-        Orientation(int angle) {
-            mAngle = angle;
-        }
-
-        /**
-         * Return the orientation rotate angle.
-         *
-         * @return the orientaion rotate angle
-         */
-        public int getAngle() {
-            return mAngle;
-        }
-    }
-
     public XYMultipleSeriesRenderer() {
         this(1);
     }
-
     public XYMultipleSeriesRenderer(int scaleNumber) {
         scalesCount = scaleNumber;
         initAxesRange(scaleNumber);
+    }
+
+    public boolean isBlackBackgroundEnabled() {
+        return mBlackBackground;
+    }
+
+    public void setEnableBlackBackground(boolean mBlackBackground) {
+        this.mBlackBackground = mBlackBackground;
     }
 
     public void initAxesRange(int scales) {
@@ -222,6 +210,15 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
     }
 
     /**
+     * Sets the title for the Y axis.
+     *
+     * @param title the Y axis title
+     */
+    public void setYTitle(String title) {
+        setYTitle(title, 0);
+    }
+
+    /**
      * Returns the title for the Y axis.
      *
      * @param scale the renderer scale
@@ -229,15 +226,6 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
      */
     public String getYTitle(int scale) {
         return mYTitle[scale];
-    }
-
-    /**
-     * Sets the title for the Y axis.
-     *
-     * @param title the Y axis title
-     */
-    public void setYTitle(String title) {
-        setYTitle(title, 0);
     }
 
     /**
@@ -751,6 +739,15 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
     }
 
     /**
+     * Override {@link DefaultRenderer#setPanEnabled(boolean)} so it can be
+     * delegated to {@link #setPanEnabled(boolean, boolean)}.
+     */
+    @Override
+    public void setPanEnabled(final boolean enabled) {
+        setPanEnabled(enabled, enabled);
+    }
+
+    /**
      * Returns the enabled state of the pan on X axis.
      *
      * @return if pan is enabled on X axis
@@ -777,15 +774,6 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
     public void setPanEnabled(boolean enabledX, boolean enabledY) {
         mPanXEnabled = enabledX;
         mPanYEnabled = enabledY;
-    }
-
-    /**
-     * Override {@link DefaultRenderer#setPanEnabled(boolean)} so it can be
-     * delegated to {@link #setPanEnabled(boolean, boolean)}.
-     */
-    @Override
-    public void setPanEnabled(final boolean enabled) {
-        setPanEnabled(enabled, enabled);
     }
 
     /**
@@ -1039,6 +1027,16 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
     }
 
     /**
+     * Sets the axes initial range values. This will be used in the zoom fit tool.
+     *
+     * @param range an array having the values in this order: minX, maxX, minY,
+     *              maxY
+     */
+    public void setInitialRange(double[] range) {
+        setInitialRange(range, 0);
+    }
+
+    /**
      * Returns the initial range.
      *
      * @param scale the renderer scale
@@ -1046,16 +1044,6 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
      */
     public double[] getInitialRange(int scale) {
         return initialRange.get(scale);
-    }
-
-    /**
-     * Sets the axes initial range values. This will be used in the zoom fit tool.
-     *
-     * @param range an array having the values in this order: minX, maxX, minY,
-     *          maxY
-     */
-    public void setInitialRange(double[] range) {
-        setInitialRange(range, 0);
     }
 
     /**
@@ -1079,21 +1067,21 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
     }
 
     /**
-     * Returns the Y axis labels color.
-     *
-     * @return the Y axis labels color
-     */
-    public int getYLabelsColor(int scale) {
-        return mYLabelsColor[scale];
-    }
-
-    /**
      * Sets the X axis labels color.
      *
      * @param color the X axis labels color
      */
     public void setXLabelsColor(int color) {
         mXLabelsColor = color;
+    }
+
+    /**
+     * Returns the Y axis labels color.
+     *
+     * @return the Y axis labels color
+     */
+    public int getYLabelsColor(int scale) {
+        return mYLabelsColor[scale];
     }
 
     /**
@@ -1183,12 +1171,12 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
     }
 
     /**
-     * Sets the Y labels vertical padding
+     * Sets the Y labels padding
      *
-     * @param padding the amount of vertical padding
+     * @param padding the amount of padding between the axis and the label
      */
-    public void setYLabelsVerticalPadding(float padding) {
-        mYLabelsVerticalPadding = padding;
+    public void setYLabelsPadding(float padding) {
+        mYLabelsPadding = padding;
     }
 
     /**
@@ -1201,12 +1189,12 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
     }
 
     /**
-     * Sets the Y labels padding
+     * Sets the Y labels vertical padding
      *
-     * @param padding the amount of padding between the axis and the label
+     * @param padding the amount of vertical padding
      */
-    public void setYLabelsPadding(float padding) {
-        mYLabelsPadding = padding;
+    public void setYLabelsVerticalPadding(float padding) {
+        mYLabelsVerticalPadding = padding;
     }
 
     /**
@@ -1319,5 +1307,29 @@ public class XYMultipleSeriesRenderer extends DefaultRenderer {
 
     public int getScalesCount() {
         return scalesCount;
+    }
+
+    /**
+     * An enum for the XY chart orientation of the X axis.
+     */
+    public enum Orientation {
+        HORIZONTAL(0), VERTICAL(90);
+        /**
+         * The rotate angle.
+         */
+        private int mAngle = 0;
+
+        Orientation(int angle) {
+            mAngle = angle;
+        }
+
+        /**
+         * Return the orientation rotate angle.
+         *
+         * @return the orientaion rotate angle
+         */
+        public int getAngle() {
+            return mAngle;
+        }
     }
 }

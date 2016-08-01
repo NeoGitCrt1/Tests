@@ -29,12 +29,14 @@ import org.achartengine.renderer.SimpleSeriesRenderer;
 public abstract class RoundChart extends AbstractChart {
     /** The legend shape width. */
     protected static final int SHAPE_WIDTH = 10;
+    /**
+     * A no value constant.
+     */
+    protected static final int NO_VALUE = Integer.MAX_VALUE;
     /** The series dataset. */
     protected CategorySeries mDataset;
     /** The series renderer. */
     protected DefaultRenderer mRenderer;
-    /** A no value constant. */
-    protected static final int NO_VALUE = Integer.MAX_VALUE;
     /** The chart center X axis. */
     protected int mCenterX = NO_VALUE;
     /** The chart center y axis. */
@@ -114,21 +116,21 @@ public abstract class RoundChart extends AbstractChart {
     }
 
     /**
-     * Returns the center on Y axis.
-     *
-     * @return the center on Y axis
-     */
-    public int getCenterY() {
-        return mCenterY;
-    }
-
-    /**
      * Sets a new center on X axis.
      *
      * @param centerX center on X axis
      */
     public void setCenterX(int centerX) {
         mCenterX = centerX;
+    }
+
+    /**
+     * Returns the center on Y axis.
+     *
+     * @return the center on Y axis
+     */
+    public int getCenterY() {
+        return mCenterY;
     }
 
     /**

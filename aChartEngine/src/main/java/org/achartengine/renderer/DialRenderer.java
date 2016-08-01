@@ -40,10 +40,6 @@ public class DialRenderer extends DefaultRenderer {
     /** An array of the renderers types (default is NEEDLE). */
     private List<Type> mVisualTypes = new ArrayList<Type>();
 
-    public enum Type {
-        NEEDLE, ARROW
-    }
-
     /**
      * Returns the start angle value of the dial.
      *
@@ -191,6 +187,10 @@ public class DialRenderer extends DefaultRenderer {
     public void setVisualTypes(Type[] types) {
         mVisualTypes.clear();
         mVisualTypes.addAll(Arrays.asList(types));
+    }
+
+    public enum Type {
+        NEEDLE, ARROW
     }
 
 }

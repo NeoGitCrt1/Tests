@@ -61,7 +61,7 @@ public class TouchHandler implements ITouchHandler {
         zoomR = graphicalView.getZoomRectangle();
         if (chart instanceof XYChart) {
             mRenderer = ((XYChart) chart).getRenderer();
-        } else {
+        } else if (chart instanceof RoundChart) {
             mRenderer = ((RoundChart) chart).getRenderer();
         }
         if (mRenderer.isPanEnabled()) {

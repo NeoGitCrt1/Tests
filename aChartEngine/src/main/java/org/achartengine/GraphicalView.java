@@ -44,6 +44,10 @@ import org.achartengine.tools.ZoomListener;
  * The view that encapsulates the graphical chart.
  */
 public class GraphicalView extends View {
+    /**
+     * The zoom buttons background color.
+     */
+    private static final int ZOOM_BUTTONS_COLOR = Color.argb(175, 150, 150, 150);
     /** The chart to be drawn. */
     private AbstractChart mChart;
     /** The chart renderer. */
@@ -62,8 +66,6 @@ public class GraphicalView extends View {
     private Bitmap fitZoomImage;
     /** The zoom area size. */
     private int zoomSize = 50;
-    /** The zoom buttons background color. */
-    private static final int ZOOM_BUTTONS_COLOR = Color.argb(175, 150, 150, 150);
     /** The zoom in tool. */
     private Zoom mZoomIn;
     /** The zoom out tool. */
@@ -93,7 +95,7 @@ public class GraphicalView extends View {
         mHandler = new Handler();
         if (mChart instanceof XYChart) {
             mRenderer = ((XYChart) mChart).getRenderer();
-        } else {
+        } else if (mChart instanceof RoundChart){
             mRenderer = ((RoundChart) mChart).getRenderer();
         }
         if (mRenderer.isZoomButtonsVisible()) {

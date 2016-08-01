@@ -52,10 +52,18 @@ import java.util.SortedMap;
  * The XY chart rendering class.
  */
 public abstract class XYChart extends AbstractChart {
+    /**
+     * The calculated range.
+     */
+    private final Map<Integer, double[]> mCalcRange = new HashMap<Integer, double[]>();
     /** The multiple series dataset. */
     protected XYMultipleSeriesDataset mDataset;
     /** The multiple series renderer. */
     protected XYMultipleSeriesRenderer mRenderer;
+    /**
+     * The paint to be used when drawing the grid lines.
+     */
+    protected transient Paint mGridPaint;
     /** The current scale value. */
     private float mScale;
     /** The current translate value. */
@@ -64,11 +72,6 @@ public abstract class XYChart extends AbstractChart {
     private Point mCenter;
     /** The visible chart area, in screen coordinates. */
     private Rect mScreenR;
-    /** The calculated range. */
-    private final Map<Integer, double[]> mCalcRange = new HashMap<Integer, double[]>();
-    /** The paint to be used when drawing the grid lines. */
-    protected transient Paint mGridPaint;
-
     /**
      * The clickable areas for all points. The array index is the series index,
      * and the RectF list index is the point index in that series.
@@ -355,23 +358,24 @@ public abstract class XYChart extends AbstractChart {
                 }
             }
         }
-        // draw stuff over the margins so that data doesn't render on these areas
-        drawBackground(mRenderer, canvas, x, bottom, width, height - bottom, paint, true,
-                mRenderer.getMarginsColor());
-        drawBackground(mRenderer, canvas, x, y, width, margins[0], paint, true,
-                mRenderer.getMarginsColor());
-        if (or == Orientation.HORIZONTAL) {
-            drawBackground(mRenderer, canvas, x, y, left - x, height - y, paint, true,
+        if (mRenderer.isBlackBackgroundEnabled()) {
+            // draw stuff over the margins so that data doesn't render on these areas
+            drawBackground(mRenderer, canvas, x, bottom, width, height - bottom, paint, true,
                     mRenderer.getMarginsColor());
-            drawBackground(mRenderer, canvas, right, y, margins[3], height - y, paint, true,
+            drawBackground(mRenderer, canvas, x, y, width, margins[0], paint, true,
                     mRenderer.getMarginsColor());
-        } else if (or == Orientation.VERTICAL) {
-            drawBackground(mRenderer, canvas, right, y, width - right, height - y, paint, true,
-                    mRenderer.getMarginsColor());
-            drawBackground(mRenderer, canvas, x, y, left - x, height - y, paint, true,
-                    mRenderer.getMarginsColor());
+            if (or == Orientation.HORIZONTAL) {
+                drawBackground(mRenderer, canvas, x, y, left - x, height - y, paint, true,
+                        mRenderer.getMarginsColor());
+                drawBackground(mRenderer, canvas, right, y, margins[3], height - y, paint, true,
+                        mRenderer.getMarginsColor());
+            } else if (or == Orientation.VERTICAL) {
+                drawBackground(mRenderer, canvas, right, y, width - right, height - y, paint, true,
+                        mRenderer.getMarginsColor());
+                drawBackground(mRenderer, canvas, x, y, left - x, height - y, paint, true,
+                        mRenderer.getMarginsColor());
+            }
         }
-
         boolean showTickMarks = mRenderer.isShowTickMarks();
         // boolean showCustomTextGridX = mRenderer.isShowCustomTextGridX();
         boolean showCustomTextGridY = mRenderer.isShowCustomTextGridY();
