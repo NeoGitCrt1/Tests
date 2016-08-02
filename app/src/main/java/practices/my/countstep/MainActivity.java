@@ -355,8 +355,8 @@ public class MainActivity extends AppCompatActivity {
             multiRenderer.setZoomButtonsVisible(false);
             multiRenderer.setAntialiasing(true);
             multiRenderer.setShowGridX(true);
-            multiRenderer.setShowGridY(false);
-            multiRenderer.setShowLabels(true, false);
+            multiRenderer.setShowGridY(true);
+//            multiRenderer.setShowLabels(true, false);
             multiRenderer.setShowLegend(false);
             multiRenderer.setEnableBlackBackground(false);
             multiRenderer.setLabelsTextSize(15);
