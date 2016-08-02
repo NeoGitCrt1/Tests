@@ -86,7 +86,6 @@ public class CountService extends Service implements SensorEventListener {
     public void onDestroy(){
         System.out.println("ds********************************");
         schService.shutdownNow();
-        dft.setEndCnt(true);
         new Thread(dft).start();
         mWakeLock.release();
 
@@ -118,7 +117,6 @@ public class CountService extends Service implements SensorEventListener {
             // 从现在开始1秒钟之后，每隔1秒钟执行一次job1
             long initialDelay1 = 1;
             long period1 = 1;
-            dft.setEndCnt(false);
             schService.scheduleAtFixedRate(
                     dft, initialDelay1,
                     period1, TimeUnit.MINUTES);
@@ -199,8 +197,10 @@ public class CountService extends Service implements SensorEventListener {
         synchronized (oSC) {
             for (int i = 0; i < oSC.length; i++) {
                 oSC[i] = 0;
-                sendMsg(i);
+
             }
+            oSC[oSC.length - 1] = -1;
+            sendMsg(0);
         }
     }
     private void sendMsg(int idx){
@@ -222,27 +222,18 @@ public class CountService extends Service implements SensorEventListener {
 public InsertTask() {
     startTime = new Date(System.currentTimeMillis());
         }
-
-        public synchronized void setEndCnt(boolean isShutDown) {
-            isEndCnt = isShutDown;
-        }
         @Override
         public void run(){
-            Date endTime = new Date(System.currentTimeMillis());
-            synchronized (isEndCnt) {
-                if (!isEndCnt && startTime.getDate() != endTime.getDate()) {
-                    isEndCnt = true;
-                }
+            if (oSC[oSC.length - 1] == 0) {
+                return;
             }
+            Date endTime = new Date(System.currentTimeMillis());
             TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
             try {
                 long res = traceLogDBManager.dealData(startTime, endTime, oSC);
             } catch (ParseException e) {
             }
-            if (isEndCnt){
-                clearCntStep();
-                isEndCnt = !isEndCnt;
-            }
+            clearCntStep();
             startTime.setTime(endTime.getTime());
 
         }

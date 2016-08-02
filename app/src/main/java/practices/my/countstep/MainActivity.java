@@ -237,8 +237,10 @@ public class MainActivity extends AppCompatActivity {
     private void changeTxt(int n) {
         if (n < 1) {
             tv0.setText("Hello");
-            ShowTask dft = new ShowTask();
-            dft.execute();
+            if (n < 0) {
+                nowCnt = 0;
+                new ShowTask().execute();
+            }
         } else {
             tv0.setText(Integer.toString(n));
         }
@@ -406,29 +408,31 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         initLandAndPort();
         if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            ShowTask dft = new ShowTask();
-            dft.execute();
+            new ShowTask(mTrick).execute();
+            if (mTrick > 1) {
+                mTrick = 0;
+            }
         } else if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            assert fab != null;
+            fab.setVisibility(View.GONE);
             mTrick++;
-            if (mTrick > 5) {
-                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-                assert fab != null;
+            if (mTrick > 1) {
                 fab.setVisibility(View.VISIBLE);
                 fab.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        view.setVisibility(View.GONE);
                         mTrick = mTrick < 0 ? 0 : -1;
                         Snackbar.make(view, "Replace with your own action" + mTrick, Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                     }
                 });
-                mTrick = 0;
             }
         }
 
@@ -467,28 +471,34 @@ public class MainActivity extends AppCompatActivity {
         String[] dates;
         int[] outCnts;
         int mRowLimit = 0;
+        boolean isShowDtl = false;
         public ShowTask() {
         }
 
-        protected Boolean doInBackground(Integer... params) {
-            if (mTrick < 0) {
-                mRowLimit = mTrick;
+        public ShowTask(int n) {
+            if (n < 0) {
+                isShowDtl = true;
             }
+        }
+
+        protected Boolean doInBackground(Integer... params) {
             SimpleDateFormat dateFormat;
-            if (mRowLimit < 0) {
+            if (isShowDtl) {
+                mRowLimit = -1;
                 dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             } else {
                 dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             }
             TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();
             Cursor cr = traceLogDBManager.getData(mRowLimit, "asc");
+
             int all = 0;
             if (cr != null && cr.getCount() > 0) {
 
                 dates = new String[cr.getCount()];
                 outCnts = new int[cr.getCount()];
                 int i = 0;
-                if (mRowLimit >= 0) {
+                if (!isShowDtl) {
                     while (cr.moveToNext()) {
                         all = cr.getInt(0) + cr.getInt(1) + cr.getInt(2);
 //                    outputBuilder.append(dateFormat.format(cr.getLong(3))).append(":").append(Integer.toString(all)  ).append("\n");
@@ -520,6 +530,7 @@ public class MainActivity extends AppCompatActivity {
                         i++;
 
                     }
+
                 }
             } else {
                 return false;

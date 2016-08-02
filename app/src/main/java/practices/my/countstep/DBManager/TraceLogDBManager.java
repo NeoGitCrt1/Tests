@@ -10,7 +10,6 @@ import android.util.Log;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
 import practices.my.countstep.common.db.ContextSaver;
@@ -63,32 +62,32 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
 
 
 //        add dummy data !!!!!!
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        Calendar rightNow = Calendar.getInstance();
-        rightNow.setTime(new Date(System.currentTimeMillis()));
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//        Calendar rightNow = Calendar.getInstance();
+//        rightNow.setTime(new Date(System.currentTimeMillis()));
+//
+//
+//        int[] cnts = {0, 0, 0, 0};
+//        for (int i = 0; i < 10; i++) {
+//
+//
+////            rightNow.add(Calendar.YEAR,-1);//日期减1年
+////            rightNow.add(Calendar.MONTH,3);//日期加3个月
+//            rightNow.add(Calendar.DAY_OF_YEAR, i);//日期加10天
+//            Date st = rightNow.getTime();
+//
+//            cnts[0] = 10 + i;
+//            cnts[1] = 50 + i;
+//            cnts[2] = 100 + i;
+//            cnts[3] = 100 + i;
+//
+//            try {
+//                insertData(st, st, cnts, db);
+//            } catch (ParseException e) {
+//            }
 
 
-        int[] cnts = {0, 0, 0, 0};
-        for (int i = 0; i < 10; i++) {
-
-
-//            rightNow.add(Calendar.YEAR,-1);//日期减1年
-//            rightNow.add(Calendar.MONTH,3);//日期加3个月
-            rightNow.add(Calendar.DAY_OF_YEAR, i);//日期加10天
-            Date st = rightNow.getTime();
-
-            cnts[0] = 10 + i;
-            cnts[1] = 50 + i;
-            cnts[2] = 100 + i;
-            cnts[3] = 100 + i;
-
-            try {
-                insertData(st, st, cnts, db);
-            } catch (ParseException e) {
-            }
-
-
-        }
+//        }
     }
 
     @Override
