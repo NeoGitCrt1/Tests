@@ -47,13 +47,11 @@ public class MainActivity extends AppCompatActivity {
     private Intent serviceItent;
     private CountService countService;
     //    private TextView[] tv;
-    private TextView tv0,tvInScl;
+    private TextView tv0, tvInScl;
     private Switch sw;
     //    private ScrollView mScrollView;
     private int nowCnt = 0;
     private Handler mHandler;
-
-
 
 
     @Override
@@ -79,8 +77,14 @@ public class MainActivity extends AppCompatActivity {
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                nowCnt = msg.arg1;
+
 //                    changeTxt(msg.what,   Integer.toString( msg.arg1));
+                if (msg.what < 0) {
+                    nowCnt = 0;
+                    new ShowTask().execute();
+                } else {
+                    nowCnt = msg.arg1;
+                }
                 changeTxt(nowCnt);
             }
         };
@@ -151,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private int mTrick = 0;
+
     private void initLandAndPort() {
         setContentView(R.layout.activity_main);
         tv0 = (TextView) findViewById(R.id.textView0);
@@ -205,7 +210,6 @@ public class MainActivity extends AppCompatActivity {
         mTrick = 0;
 
 
-
     }
 
     @Override
@@ -237,10 +241,6 @@ public class MainActivity extends AppCompatActivity {
     private void changeTxt(int n) {
         if (n < 1) {
             tv0.setText("Hello");
-            if (n < 0) {
-                nowCnt = 0;
-                new ShowTask().execute();
-            }
         } else {
             tv0.setText(Integer.toString(n));
         }
@@ -275,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     };
+
     @Override
 
     protected void onDestroy() {
@@ -298,12 +299,13 @@ public class MainActivity extends AppCompatActivity {
     /**
      * The encapsulated graphical view.
      */
-    private GraphicalView mView;
+//    private GraphicalView mView;
     /**
      * The chart to be drawn.
      */
     private XYSeriesRenderer incomeRenderer;
-    private XYMultipleSeriesRenderer multiRenderer;
+//    private XYMultipleSeriesRenderer multiRenderer;
+
     private GraphicalView openChart(String[] dates, int[] cnts) {
         XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
 //        int[] x = {1, 2, 3, 4, 5, 6, 7, 8};
@@ -346,13 +348,17 @@ public class MainActivity extends AppCompatActivity {
 //        expenseRenderer.setLineWidth(2);
 //        expenseRenderer.setDisplayChartValues(true);
         // Creating a XYMultipleSeriesRenderer to customize the whole chart
+        XYMultipleSeriesRenderer multiRenderer = null;
         if (multiRenderer == null) {
             multiRenderer = new XYMultipleSeriesRenderer();
             multiRenderer.setXLabels(0);
+//            multiRenderer.setXAxisMin(0D);
+//            multiRenderer.setYAxisMin(0D);
 //            multiRenderer.setChartTitle("Income vs Expense Chart");
 //            multiRenderer.setXTitle("Year 2012");
 //            multiRenderer.setYTitle("Amount in Dollars");
             multiRenderer.setZoomButtonsVisible(false);
+            multiRenderer.setExternalZoomEnabled(true);
             multiRenderer.setAntialiasing(true);
             multiRenderer.setShowGridX(true);
             multiRenderer.setShowGridY(true);
@@ -377,6 +383,8 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < dates.length; i++) {
             multiRenderer.addXTextLabel(i + 1, dates[i]);
         }
+        multiRenderer.setYAxisMin(0D);
+        multiRenderer.setXAxisMin(1D);
 
 //        multiRenderer.addSeriesRenderer(expenseRenderer);
 
@@ -388,7 +396,9 @@ public class MainActivity extends AppCompatActivity {
 
 //        mChart = (AbstractChart) intent.getExtras().getSerializable(ChartFactory.CHART);
 //        mView = new GraphicalView(this, mChart);
-        return ChartFactory.getLineChartView(this, dataset, multiRenderer);
+        GraphicalView mView = ChartFactory.getLineChartView(this, dataset, multiRenderer);
+        mView.zoomReset();
+        return mView;
 //        String title = intent.getExtras().getString(ChartFactory.TITLE);
 //        if (title == null) {
 //            requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -408,6 +418,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -472,6 +483,7 @@ public class MainActivity extends AppCompatActivity {
         int[] outCnts;
         int mRowLimit = 0;
         boolean isShowDtl = false;
+
         public ShowTask() {
         }
 
@@ -494,7 +506,6 @@ public class MainActivity extends AppCompatActivity {
 
             int all = 0;
             if (cr != null && cr.getCount() > 0) {
-
                 dates = new String[cr.getCount()];
                 outCnts = new int[cr.getCount()];
                 int i = 0;

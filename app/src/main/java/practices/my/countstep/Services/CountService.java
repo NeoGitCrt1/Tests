@@ -45,8 +45,9 @@ class TriggerListener extends TriggerEventListener {
 public class CountService extends Service implements SensorEventListener {
 
 
-//    private
+    //    private
     private final CountServiceBinder countServiceBinder = new CountServiceBinder();
+
     public class CountServiceBinder extends Binder {
         public CountService getService() {
             return CountService.this;
@@ -56,7 +57,7 @@ public class CountService extends Service implements SensorEventListener {
 
 //    private final SensorManager mSensorManager;
 
-//    CountService(){
+    //    CountService(){
 //        mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
 //
 //        mSigMotion = mSensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION);
@@ -71,9 +72,10 @@ public class CountService extends Service implements SensorEventListener {
 //    private final TriggerEventListener mListener = new TriggerEventListener();
 
     private PowerManager.WakeLock mWakeLock;
+
     @Override
-    public void onCreate(){
-        System.out.println("Cr********************************");
+    public void onCreate() {
+//        System.out.println("Cr********************************");
         super.onCreate();
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mAcceleromete = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -82,34 +84,40 @@ public class CountService extends Service implements SensorEventListener {
         mWakeLock = manager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "s");// CPU保存运行
 
     }
+
     @Override
-    public void onDestroy(){
-        System.out.println("ds********************************");
-        schService.shutdownNow();
+    public void onDestroy() {
+//        System.out.println("ds********************************");
+        mSensorManager.unregisterListener(this);
+        schService.shutdown();
         new Thread(dft).start();
+        while (!dft.isEndSave()) {
+        }
+        if (dft.isEndSave()) sendMsg(-1);
+
+
         mWakeLock.release();
-
-        mSensorManager.unregisterListener (this);
-
         super.onDestroy();
 
     }
 
-    private  SensorManager mSensorManager = null;
-    private  Sensor mAcceleromete = null;
+    private SensorManager mSensorManager = null;
+    private Sensor mAcceleromete = null;
     private Handler mHandler;
-    public void setmHandler(Handler mHandler){
+
+    public void setmHandler(Handler mHandler) {
         this.mHandler = mHandler;
     }
 
     private ScheduledExecutorService schService = Executors.newScheduledThreadPool(10);
     private InsertTask dft = new InsertTask();
+
     @Override
     public int onStartCommand(Intent intent,
-                               int flags,
-                               int startId){
-        System.out.println("onStartCommand********************");
-        if( intent.getBooleanExtra(getString(R.string.ser_switch),false)){
+                              int flags,
+                              int startId) {
+//        System.out.println("onStartCommand********************");
+        if (intent.getBooleanExtra(getString(R.string.ser_switch), false)) {
             mWakeLock.acquire();
             mSensorManager.registerListener(this, mAcceleromete,
                     SensorManager.SENSOR_DELAY_NORMAL);
@@ -118,59 +126,48 @@ public class CountService extends Service implements SensorEventListener {
             long initialDelay1 = 1;
             long period1 = 1;
             schService.scheduleAtFixedRate(
-                    dft, initialDelay1,
+                    dft,
+                    initialDelay1,
                     period1, TimeUnit.MINUTES);
-
-
-
-//
-//            long delay1 = 1 * 1000;
-//            long period1 = 1000;
-//            // 从现在开始 1 秒钟之后，每隔 1 秒钟执行一次 job1
-//            timer.schedule(new InsertTask(), delay1, period1);
-
         }
         return START_STICKY;
     }
+
     @Override
     public ComponentName startService(Intent service) {
-        System.out.println("startService********************");
+//        System.out.println("startService********************");
         return super.startService(service);
     }
 
     @Override
     public boolean stopService(Intent name) {
-        System.out.println("stopService********************");
-        mSensorManager.unregisterListener (this);
+//        System.out.println("stopService********************");
+        mSensorManager.unregisterListener(this);
 
         return super.stopService(name);
     }
 
-    private int[] oSC= {0,0,0,0,0};
+    private int[] oSC = {0, 0, 0, 0, 0};
+    private final char[] xyz = {'x', 'y', 'z'};
 
-    private int i= 0;
-    private final char[] xyz = {'x','y','z'};
     @Override
-    public void onSensorChanged(SensorEvent event){
+    public void onSensorChanged(SensorEvent event) {
 //        System.out.println("onSensorChanged***********" + mHandler);
-        for(i = 0;i<event.values.length;i++){
-
-            if(event.values[i] > 13 ){
+        for (int i = 0; i < event.values.length; i++) {
+            float f = event.values[i];
+            if (f > 13) {
 //                System.out.println("onSensorChanged***********" + i + xyz[i] + event.values[i] );
                 oSCCntUp(0);
                 sendMsg(0);
-            }else
-            if(event.values[i] > 12 ){
+            } else if (f > 12) {
 //                System.out.println("onSensorChanged***********" + i + xyz[i] + event.values[i] );
                 oSCCntUp(1);
                 sendMsg(1);
-            }else
-            if(event.values[i] > 10.5 ){
+            } else if (f > 11) {
 //                System.out.println("onSensorChanged***********" + i + xyz[i] + event.values[i] );
                 oSCCntUp(2);
                 sendMsg(2);
-            }else
-            if(event.values[i] > 10 ){
+            } else if (f > 10) {
 //                System.out.println("onSensorChanged***********" + i + xyz[i] + event.values[i] );
                 oSCCntUp(3);
 //                sendMsg(3);
@@ -186,45 +183,53 @@ public class CountService extends Service implements SensorEventListener {
         }
     }
 
-    private int oAC= 0;
+    private int oAC = 0;
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 //        System.out.println("onAccuracyChanged***********");
         oAC++;
     }
 
-    public void clearCntStep(){
+    public void clearCntStep() {
         synchronized (oSC) {
-            for (int i = 0; i < oSC.length; i++) {
+            for (int i = 0; i < oSC.length - 1; i++) {
                 oSC[i] = 0;
 
             }
-            oSC[oSC.length - 1] = -1;
-            sendMsg(0);
         }
     }
-    private void sendMsg(int idx){
-        if(mHandler != null ) {
+
+    private void sendMsg(int idx) {
+        if (mHandler != null) {
 //            System.out.println("sendMsg***********" + mHandler);
             Message msg = new Message();
-
             msg.arg1 = oSC[oSC.length - 1];
             msg.what = idx;
-
             mHandler.sendMessage(msg);
         }
     }
+
     public static final String TAG = "CountService";
-    private class InsertTask extends TimerTask implements Runnable{
-        private Boolean isEndCnt = false;
+
+    private class InsertTask extends TimerTask implements Runnable {
         private Date startTime;
-//        private int[] cnts;
-public InsertTask() {
-    startTime = new Date(System.currentTimeMillis());
+
+        public InsertTask() {
+            startTime = new Date(System.currentTimeMillis());
         }
+
+        public boolean isEndSave() {
+            return endSave;
+        }
+
+        private volatile boolean endSave = false;
+
         @Override
-        public void run(){
-            if (oSC[oSC.length - 1] == 0) {
+        public void run() {
+            endSave = (false);
+            if ((oSC[0] + oSC[1] + oSC[2]) < 1) {
+                endSave = (true);
                 return;
             }
             Date endTime = new Date(System.currentTimeMillis());
@@ -236,7 +241,9 @@ public InsertTask() {
             clearCntStep();
             startTime.setTime(endTime.getTime());
 
+            endSave = (true);
         }
+
 //        protected Boolean doInBackground(Integer... params) {
 //
 //            TraceLogDBManager traceLogDBManager = TraceLogDBManager.GetInstance();

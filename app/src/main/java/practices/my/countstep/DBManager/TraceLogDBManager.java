@@ -202,7 +202,10 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
             + TraceLogDB.Entry.COLUMN_NAME_START + ","
             + TraceLogDB.Entry.COLUMN_NAME_END
             + " from "
-            + TraceLogDB.Entry.TABLE_NAME;
+            + TraceLogDB.Entry.TABLE_NAME
+            + " where "
+            + TraceLogDB.Entry.COLUMN_NAME_INSERT_DATE
+            + " = ?";
     public Cursor getData(int row,String sort){
         Cursor cur = null;
         try{
@@ -212,8 +215,11 @@ public class TraceLogDBManager extends SQLiteOpenHelper {
             String[] args = {String.valueOf(row)};
             if(row>0){
                 outputBuilder.append(" limit ?");
-            }else{
-                args=null;
+            } else if (row < 0) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                args[0] = String.valueOf(dateFormat.parse(dateFormat.format(System.currentTimeMillis())).getTime());
+            } else {
+                args = null;
             }
 
             if (row < 0) {
