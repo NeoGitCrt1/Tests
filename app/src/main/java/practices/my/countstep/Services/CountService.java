@@ -92,6 +92,7 @@ public class CountService extends Service implements SensorEventListener {
         schService.shutdown();
         new Thread(dft).start();
         while (!dft.isEndSave()) {
+            Thread.yield();
         }
         if (dft.isEndSave()) sendMsg(-1);
 
